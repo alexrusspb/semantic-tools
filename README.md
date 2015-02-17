@@ -1,2 +1,6 @@
 # semantic-tools
-This is diploma. 
+# This is diploma. 
+
+select 'hello, world' from dual;
+
+/* some edits here */
