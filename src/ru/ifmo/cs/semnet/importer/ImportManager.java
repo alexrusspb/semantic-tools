@@ -2,6 +2,7 @@ package ru.ifmo.cs.semnet.importer;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import ru.ifmo.cs.semnet.core.ModifyOptions;
@@ -28,9 +29,12 @@ public class ImportManager {
 	/* Управляемая семантическая сеть */
 	private SemanticNetwork<? extends Node> managedNetwork;
 	
+	private ExecutorService importPool = null;
+	
 	private ImportManager(SemanticNetwork<? extends Node> semNet) {
 		regDrivers = new ArrayList<>();
 		managedNetwork = semNet;
+		importPool = Executors.newFixedThreadPool(2);
 	}
 	
 	/**
@@ -44,7 +48,6 @@ public class ImportManager {
 		if(driver != null && !regDrivers.contains(driver)) {
 			regDrivers.add(driver);
 		}
-		System.out.println("Зарегистрировано драйверов: "  + regDrivers.size());
 	}
 	
 	/**
@@ -56,7 +59,7 @@ public class ImportManager {
 		
 		if(mode.equals(ImportMode.ASYNC)) {
 			/* В асинхронном режиме производим запуск импорта в отдельном потоке */
-			Executors.newSingleThreadExecutor().execute(this::importData);
+			importPool.execute(this::importData);
 		} else {
 			importData();
 		}
@@ -82,19 +85,20 @@ public class ImportManager {
 			@Override
 			public void run() {
 				
-				int elapsedTime = 0;
+				long elapsedTime = 0;
 				long startTime = new Date().getTime();
 				
 				while(true) {
 					
 					/* считаем время с последнего запуска сканирования драйверов */
-					long time = new Date().getTime();
-					elapsedTime += time - startTime;
+					long currentTime = new Date().getTime();
+					elapsedTime = currentTime - startTime;
 					
 					// раз в назначенное время запускаем update
-					if(elapsedTime / 1000 >= Options.getInstance().getCronTimeForUpdateImport()) {
+					if(elapsedTime > Options.getInstance().getCronTimeForUpdateImport() * 1000) {
 						forcedImport(ImportMode.ASYNC);
 						elapsedTime = 0;
+						startTime = new Date().getTime();
 					}
 				}
 			}
@@ -119,9 +123,13 @@ public class ImportManager {
 					/* извлекаем представление родительского узла */
 					Object parent = next.selectParamInSafemode(next.getDefaultLocale(), Node.PARENT_VIEW);
 					
+					Node n = null;
+					
 					/* ищем его в сети */
-					Node n = managedNetwork.select(SelectorBuilder.Create(next.getDefaultLocale())
-							.appendParameter(Node.VIEW_OPTION, parent.toString()).build());
+					if(parent != null) {
+						n = managedNetwork.select(SelectorBuilder.Create(next.getDefaultLocale())
+								.appendParameter(Node.VIEW_OPTION, parent.toString()).build());
+					}
 					
 					ModifyOptions mo = null;
 					
@@ -158,6 +166,12 @@ public class ImportManager {
 			throw new IllegalArgumentException("Не задана семаническая сеть");
 		}
 		return new ImportManager(semNet);
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		importPool.shutdownNow();
+		super.finalize();
 	}
 }
 

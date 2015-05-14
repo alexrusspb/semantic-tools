@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Класс описывающий узел семантической сети.
@@ -16,10 +18,10 @@ public class Node implements Serializable {
 	private static final long serialVersionUID = -7180176353700448140L;
 
 	/* для общего параметра для всех локалей используй Locale.ROOT */
-	private HashMap<Locale, HashMap<String, Object>> params;
+	private Map<Locale, Map<String, Object>> params;
 	
 	/* ссылки на другие узлы, связанные с текущим */
-	private HashMap<Node, NodeLink> linksNodes;
+	private Map<Node, NodeLink> linksNodes;
 	
 	/* Helper'ы */
 	public static final Locale RUSSIA = new Locale("ru");
@@ -89,7 +91,7 @@ public class Node implements Serializable {
 	 * 
 	 * @return - карта параметров понятия
 	 */
-	protected HashMap<Locale, HashMap<String, Object>> getParams() {
+	protected Map<Locale, Map<String, Object>> getParams() {
 		return params;
 	}
 	
@@ -98,7 +100,7 @@ public class Node implements Serializable {
 	 * 
 	 * @param newParams - новая карта параметров понятия
 	 */
-	protected void setParams(HashMap<Locale, HashMap<String, Object>> newParams) {
+	protected void setParams(Map<Locale, Map<String, Object>> newParams) {
 		if(newParams != null) {
 			params = newParams;
 		}
@@ -109,7 +111,7 @@ public class Node implements Serializable {
 	 * 
 	 * @return карта ссылок на узлы сети
 	 */
-	public HashMap<Node, NodeLink> getLinks() {
+	public Map<Node, NodeLink> getLinks() {
 		return linksNodes;
 	}
 	
@@ -133,16 +135,11 @@ public class Node implements Serializable {
 	 * @return - набор найденных параметров. Может быть пустым.
 	 */
 	public ArrayList<Object> selectParams(String name) {
-		ArrayList<Object> result = new ArrayList<>();
 		
-		getParams().forEach((k, v) -> {
-			Object paramValue = v.get(name);
-			if(paramValue != null) {
-				result.add(paramValue);
-			}
-		});
-		
-		return result;
+		return (ArrayList<Object>) getParams().values().stream()
+				.map(v -> v.get(name))
+				.filter(pV -> pV != null)
+				.collect(Collectors.toList());
 	}
 	
 	/**
@@ -171,7 +168,7 @@ public class Node implements Serializable {
 		if(locale == null) {
 			locale = getDefaultLocale();
 		}
-		HashMap<String, Object> paramsForLang = getParams().get(locale);
+		Map<String, Object> paramsForLang = getParams().get(locale);
 		if(paramsForLang != null) {
 			return paramsForLang.get(name);
 		}
@@ -218,7 +215,7 @@ public class Node implements Serializable {
 	 * 			внедрено, иначе <b>false</b>
 	 */
 	public boolean insertParam(Locale locale, String name, Object value) {
-		HashMap<String, Object> paramsForLang = getParams().get(locale);
+		Map<String, Object> paramsForLang = getParams().get(locale);
 		if(paramsForLang == null) {
 			paramsForLang = new HashMap<String, Object>();
 			getParams().put(locale, paramsForLang);
@@ -251,7 +248,7 @@ public class Node implements Serializable {
 	 * @param value - новое значение
 	 */
 	public void modifyParam(Locale locale, String name, Object value) throws LangNotSupportedException {
-		HashMap<String, Object> paramsForLang = getParams().get(locale);
+		Map<String, Object> paramsForLang = getParams().get(locale);
 		if(paramsForLang == null) {
 			throw new LangNotSupportedException(locale, this);
 		}
@@ -335,6 +332,7 @@ public class Node implements Serializable {
 				}
 			}
 		}
+		
 		if(newParent != null) {
 			getLinks().put(newParent, NodeLink.PARENT);
 		}

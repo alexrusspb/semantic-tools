@@ -12,11 +12,12 @@ import java.util.concurrent.Future;
 /**
  * Класс, описывающий структуру данных семантической сети.
  * 
- * *** FIXME	select - прескорбно тупой (не работает с ссылками, 
+ * *** FIXME	select - прИскорбно тупой (не работает с ссылками, 
  * 		поддеревьями и параметрами узлов, на которые ссылается)
  * 				remove - удаляет только через поиск. Добавить 
  * 		удаление объекта напрямую: remove(myNode);
- * 				insert - нужно больше параметров!
+ * 				insert - нужно больше параметров; нет проверки, 
+ * 		что узел уже есть и его не надо добавлять
  * 
  * *** FIXME добавить методы неточного поиска 
  * 				и сохранения/чтения сети в/из файла
@@ -297,5 +298,11 @@ public class SemanticNetwork<T extends Node> implements Serializable {
 			return (T) next;
 		}
 		return null;
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		threadsPool.shutdownNow();
+		super.finalize();
 	}
 }

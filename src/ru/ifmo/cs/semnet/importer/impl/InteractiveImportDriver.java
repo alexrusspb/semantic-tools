@@ -7,17 +7,30 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.Options;
 import ru.ifmo.cs.semnet.importer.ImportDriver;
 
+/**
+ * Реализация простейшего "интерактивного" драйвера импорта.
+ * Драйвер осуществляет чтение входной строки из заданного
+ * потока ввода, согласно формату, указанному в @link=helpString()
+ * 
+ * Завершается работа драйвера подачей строки EXIT на входной
+ * поток текстовых данных.
+ * 
+ * @author alex
+ *
+ */
 public class InteractiveImportDriver implements ImportDriver<Node> {
 
 	private static final long serialVersionUID = -2059568814402703495L;
@@ -28,12 +41,19 @@ public class InteractiveImportDriver implements ImportDriver<Node> {
 	
 	private static final String LOCALE_KEY = "-L";
 	
+	/* считанные ноды */
 	private ConcurrentLinkedQueue<Node> updates = new ConcurrentLinkedQueue<>();
 	
 	private Scanner scanner = null;
 	
 	private Locale importForLocale = null;
 	
+	/**
+	 * Инициализация драйвера
+	 * 
+	 * @param source - поток-источник текстовых строк (не может быть null)
+	 * @param loc	 - локаль по-умолчанию для которой добавляются узлы сети
+	 */
 	public InteractiveImportDriver(InputStream source, Locale loc) {
 		if(source != null) {
 			scanner = new Scanner(source);
@@ -42,50 +62,74 @@ public class InteractiveImportDriver implements ImportDriver<Node> {
 			} else {
 				importForLocale = loc;
 			}
-			Executors.newSingleThreadExecutor().execute(this::updateCycle);
+			start();
+		}
+	}
+	
+	/**
+	 * Запуск драйвера. Вызывается автоматически, после создания
+	 * экземпляра драйвера. Вызов "вручную" необходим, если работа
+	 * драйвера была прекращена.
+	 */
+	public void start() {
+		if(worked == null || !isWorked()) {
+			worked = Executors.newSingleThreadExecutor().submit(this::updateCycle);
 		}
 	}
 
-	private boolean worked = false;
+	private Future<?> worked = null;
 	
+	/**
+	 * Определение состояния драйвера.
+	 * @return true, если драйвер активен и воспринимает 
+	 * 				сканирует входящий поток, иначе false
+	 */
 	public boolean isWorked() {
-		return worked;
+		return !worked.isDone();
 	}
 	
+	/**
+	 * Метод осуществляющий сканирование потока в бесконечном цикле,
+	 * а так же прекращает его работу по необходимости.
+	 */
 	protected void updateCycle() {
-		worked = true;
 		while(true) {
 			if(scanner != null && scanner.hasNextLine()) {
 				String line = scanner.nextLine();
 				String[] args = line.split(" ");
 				
 				if(args.length == 1 && args[0].equalsIgnoreCase("EXIT")) {
-					scanner.close();
-					worked = false;
+					System.out.println("closing and exit");
 					return;
 				}
 				
 				if(args.length >= 2) {
-					for(String s : args) {
-						s.toUpperCase();
-					}
 					processImport(args);
 				}
 			}
 		}
 	}
 	
+	/**
+	 * Метод разбора входящей строки и создание нового
+	 * узла сети, на основе заданных параметров
+	 * @param args
+	 */
 	protected void processImport(String[] args) {
 		if(args[0].equals(IMPORT_KEYWORD)) {
 			
 			String view = args[1];
 			Locale l = importForLocale;
-			HashMap<String, String> params = new HashMap<>();
+			Map<String, String> params = new HashMap<>();
 			
-			ArrayList<String> argsList = (ArrayList<String>) Arrays.asList(args);
-			argsList.remove(0);
-			argsList.remove(1);
+			/* конвертируем в лист, ибо так будет проще */
+			List<String> argsList = new ArrayList<>();
+			/* слово IMPORT и представление ноды опускаем */
+			for(int i = 2; i < args.length; ++i) {
+				argsList.add(args[i]);
+			}
 			
+			/* меняем локаль, если она заданна */
 			if(argsList.contains(LOCALE_KEY)) {
 				int lastIndexOf = argsList.lastIndexOf(LOCALE_KEY);
 				l = new Locale(argsList.get(lastIndexOf + 1));
@@ -93,6 +137,7 @@ public class InteractiveImportDriver implements ImportDriver<Node> {
 				argsList.remove(lastIndexOf);
 			}
 			
+			/* задаем родительский узел */
 			if(argsList.contains(FOR_KEYWORD)) {
 				int lastIndexOf = argsList.lastIndexOf(FOR_KEYWORD);
 				params.put(Node.PARENT_VIEW, argsList.get(lastIndexOf + 1));
@@ -100,6 +145,7 @@ public class InteractiveImportDriver implements ImportDriver<Node> {
 				argsList.remove(lastIndexOf);
 			}
 			
+			/* если заданы доп. параметры, то сохраняем и их */
 			if(argsList.size() > 0) {
 				for(String param : argsList) {
 					String[] opts = param.split("=");
@@ -110,10 +156,12 @@ public class InteractiveImportDriver implements ImportDriver<Node> {
 				}
 			}
 			
+			/* создаем узел, заполняем данными, сохраняем обновление */
 			Node newNode = new Node(view, l);
 			for(String parameter : params.keySet()) {
 				newNode.insertParam(l, parameter, params.get(parameter));
 			}
+			
 			updates.add(newNode);
 		}
 	}
@@ -157,8 +205,7 @@ public class InteractiveImportDriver implements ImportDriver<Node> {
 		return ois;
 	}
 
-	@Override
-	public String toString() {
+	public String helpString() {
 		return "usage: IMPORT VIEW_OF_NEW_NODE [FOR VIEW_OF_PARENT_NODE] \n"
 				+ "		[OPT_NAME=OPT_VALUE ...] [-L locale_code]\n";
 	}

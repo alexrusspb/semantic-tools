@@ -9,7 +9,6 @@ public class CreateAndUsingSemNetExample {
 
 	public static void main(String[] args) {
 		
-		
 		Node root = new Node("Сущность", Node.RUSSIA);
 		
 		SemanticNetwork<Node> semanticNetwork = new SemanticNetwork<Node>(root);
@@ -21,15 +20,15 @@ public class CreateAndUsingSemNetExample {
 		manager.runInBackgroundMode();
 
 		System.out.println("Для импорта данных используйте формат ввода:");
-		System.out.println(driver.toString());
+		System.out.println(driver.helpString());
 		System.out.println("Для выхода введите EXIT");
 		
 		while(driver.isWorked()) {
 			// ждем, пока работает драйвер
+			// пока юзер не нажмет EXIT
 		}
 		
 		System.out.println("Размер сети: " + semanticNetwork.size());
 		System.out.println("Корневой узел имеет формат: \n" + root.toVerboseString());
 	}
-
 }
