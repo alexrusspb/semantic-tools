@@ -2,6 +2,15 @@ package ru.ifmo.cs.semnet.core;
 
 import java.util.ArrayList;
 
+/**
+ * Поток для осуществления поиска.
+ * 
+ * FIXME учитыват балансирование дерева либо переделать
+ * алгоритм на тот, что указан в fixme в Node
+ * 
+ * @author alex
+ *
+ */
 public class SelectorThread implements Runnable {
 
 	private Selector selector;

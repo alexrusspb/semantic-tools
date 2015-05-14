@@ -11,6 +11,11 @@ import java.util.stream.Collectors;
 /**
  * Класс описывающий узел семантической сети.
  * 
+ * FIXME переделать forEach-методы на stream'ы
+ * 
+ * FIXME подумать над хранилищем словаря 
+ * целиком, а в нодах хранить только ссылки
+ * 
  * @author Pismak Alexey
  */
 public class Node implements Serializable {
@@ -23,7 +28,7 @@ public class Node implements Serializable {
 	/* ссылки на другие узлы, связанные с текущим */
 	private Map<Node, NodeLink> linksNodes;
 	
-	/* Helper'ы */
+	/* Helper'ы */ // FIXME вынести это в отдельные классы
 	public static final Locale RUSSIA = new Locale("ru");
 	public static final String VIEW_OPTION = "view";
 	public static final String PARENT_VIEW = "parent";

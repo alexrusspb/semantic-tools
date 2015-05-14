@@ -21,7 +21,7 @@ import ru.ifmo.cs.semnet.core.Options;
 import ru.ifmo.cs.semnet.importer.ImportDriver;
 
 /**
- * Реализация простейшего "интерактивного" драйвера импорта.
+ * Реализация простейшего потокового драйвера импорта.
  * Драйвер осуществляет чтение входной строки из заданного
  * потока ввода, согласно формату, указанному в @link=helpString()
  * 
@@ -31,7 +31,7 @@ import ru.ifmo.cs.semnet.importer.ImportDriver;
  * @author alex
  *
  */
-public class InteractiveImportDriver implements ImportDriver<Node> {
+public class TextStreamImportDriver implements ImportDriver<Node> {
 
 	private static final long serialVersionUID = -2059568814402703495L;
 
@@ -54,7 +54,7 @@ public class InteractiveImportDriver implements ImportDriver<Node> {
 	 * @param source - поток-источник текстовых строк (не может быть null)
 	 * @param loc	 - локаль по-умолчанию для которой добавляются узлы сети
 	 */
-	public InteractiveImportDriver(InputStream source, Locale loc) {
+	public TextStreamImportDriver(InputStream source, Locale loc) {
 		if(source != null) {
 			scanner = new Scanner(source);
 			if(loc == null) {

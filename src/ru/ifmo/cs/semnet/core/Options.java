@@ -18,29 +18,43 @@ import java.util.Locale;
 
 import ru.ifmo.cs.semnet.importer.ImportMode;
 
+/**
+ * Всевозможные параметры
+ * 
+ * FIXME добавить константы используемые 
+ * в классах ядра и импортера
+ * 
+ * @author alex
+ *
+ */
 public class Options implements Serializable {
 
 	private static final long serialVersionUID = 4742943375354831141L;
 	
 	private static final String pathToFile = "config/options.cfg";
 
+	/* локаль по умолчанию */
 	private Locale defaultLocale = Locale.ENGLISH;
 	
+	/* режим импорта */
 	private ImportMode defaultImportMode = ImportMode.DEFAULT;
 	
+	/* время периодического запуска сканирования 
+	   драйверов на наличие обновлений */
 	private int cronTimeForUpdateImport = 10;
 	
 	private static Options instance;
-	
-	private Options() {
-		defaultLocale = Locale.ENGLISH;
-	}
 	
 	static {
 		instance = new Options();
 		instance.restore();
 	}
 	
+	/**
+	 * Получение экземпляра объекта параметров
+	 * 
+	 * @return instance of options object
+	 */
 	public static Options getInstance() {
 		return instance;
 	}
@@ -69,6 +83,11 @@ public class Options implements Serializable {
 		this.cronTimeForUpdateImport = cronTimeForUpdateImport;
 	}
 	
+	/**
+	 * Сохранение параметров. Необходимо вызвать, если 
+	 * сделанные в ходе выполнения программы изменения 
+	 * параметров нужно зафиксировать.
+	 */
 	public static void save() {
 		try {
 			
@@ -88,6 +107,7 @@ public class Options implements Serializable {
 		}
  	}
 	
+	/* восстнановление сохраненных параметров */
 	private void restore() {
 		try {
 			
@@ -110,8 +130,7 @@ public class Options implements Serializable {
 		File file = null;
 	    URL res = instance.getClass().getClassLoader().getResource(pathToFile);
 	    if (res.toString().startsWith("jar:")) {
-	        try {
-	            InputStream input = instance.getClass().getResourceAsStream(pathToFile);
+	        try (InputStream input = instance.getClass().getResourceAsStream(pathToFile)) {
 	            file = File.createTempFile("tempfile", ".tmp");
 	            OutputStream out = new FileOutputStream(file);
 	            int read;

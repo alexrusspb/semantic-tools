@@ -3,7 +3,7 @@ package ru.ifmo.cs.semnet.examples;
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.SemanticNetwork;
 import ru.ifmo.cs.semnet.importer.ImportManager;
-import ru.ifmo.cs.semnet.importer.impl.InteractiveImportDriver;
+import ru.ifmo.cs.semnet.importer.impl.TextStreamImportDriver;
 
 public class CreateAndUsingSemNetExample {
 
@@ -13,7 +13,7 @@ public class CreateAndUsingSemNetExample {
 		
 		SemanticNetwork<Node> semanticNetwork = new SemanticNetwork<Node>(root);
 		
-		InteractiveImportDriver driver = new InteractiveImportDriver(System.in, Node.RUSSIA);
+		TextStreamImportDriver driver = new TextStreamImportDriver(System.in, Node.RUSSIA);
 		
 		ImportManager manager = ImportManager.createFor(semanticNetwork);
 		manager.registerDriver(driver);
