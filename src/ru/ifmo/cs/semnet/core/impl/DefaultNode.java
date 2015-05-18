@@ -244,10 +244,8 @@ public class DefaultNode implements Node {
 				throw new MutatedNodeException(this, "attempt remove child, "
 					+ "which not found in nodes storage [CHILD_ID = " + idChild + "]");
 			}
-			// по умолчанию, удаляемый дочерний узел цепляем к корневому
-			if(node.changeParent(SemNetUtils.ROOT_NODE_ID)) {
-				links.remove(idChild);
-			}
+			links.remove(idChild);
+			return true;
 		}
 		return false;
 	}
@@ -364,7 +362,7 @@ public class DefaultNode implements Node {
 
 	@Override
 	public boolean addParameter(String name, Object value) {
-		return addParameter(name, value, initLocale);
+		return addParameter(name.toUpperCase(), value, initLocale);
 	}
 
 	@Override
@@ -386,6 +384,7 @@ public class DefaultNode implements Node {
 
 	@Override
 	public void removeParameter(String name) {
+		name = name.toUpperCase();
 		/* параметры представления являются служебными и не удаляются */
 		if(name != SemNetUtils.VIEW_NAME_PARAMETER) {
 			for(Locale l : params.keySet()) {
@@ -402,6 +401,7 @@ public class DefaultNode implements Node {
 	@Override
 	public Object removeLocalizedParameter(String name, Locale locale)
 			throws LangNotSupportedException {
+		name = name.toUpperCase();
 		if(!params.containsKey(locale)) {
 			throw new LangNotSupportedException(locale, this);
 		}
@@ -437,6 +437,7 @@ public class DefaultNode implements Node {
 	public void modifyParameters(String name, Object value, Object newValue) {
 		for(Locale locale : getSupportedLocales()) {
 			try {
+				name = name.toUpperCase();
 				modifyLocalizedParameter(name, value, newValue, locale);
 			} catch (LangNotSupportedException ex) {
 				ex.printStackTrace();
@@ -516,6 +517,7 @@ public class DefaultNode implements Node {
 	/* Чтение значения локализованного параметра с оберткой try-catch */
 	private Object tryWrapperGetterParameter(String paramName, Locale locale) {
 		try {
+			paramName = paramName.toUpperCase();
 			return getValueLocalizedParameter(paramName, locale);
 		} catch (LangNotSupportedException ex) {
 			ex.printStackTrace();

@@ -12,25 +12,29 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import ru.ifmo.cs.semnet.core.Node;
+import ru.ifmo.cs.semnet.core.TypeLink;
 import ru.ifmo.cs.semnet.core.impl.DefaultNode;
 import ru.ifmo.cs.semnet.core.impl.SemNet;
 import ru.ifmo.cs.semnet.core.impl.SemNetUtils;
+import ru.ifmo.cs.semnet.core.resolve.EasyRemoveLinkResolver;
 import ru.ifmo.cs.semnet.core.resolve.InsertAsNewParentResolver;
 import ru.ifmo.cs.semnet.core.resolve.InsertChildLinkResolver;
 import ru.ifmo.cs.semnet.core.resolve.InsertWithMoveChildResolver;
+import ru.ifmo.cs.semnet.core.select.FindBuilder;
 import ru.ifmo.cs.semnet.core.select.SelectBuilder;
 
 public class SemanticNetTest {
 
 	private SemNet semNet;
+	private DefaultNode node;
 	
 	@Before
 	public void init() {
 		semNet = new SemNet("Сущность", SemNetUtils.RUSSIA);
-		semNet.insert("Сковородка", new InsertChildLinkResolver<>(0)).addParameter("Area", "КуХня");
-		semNet.insert("Кастрюля", new InsertChildLinkResolver<>(0)).addParameter("Area", "КУХНЯ");
-		semNet.insert("Плитка", new InsertChildLinkResolver<>(0)).addParameter("Area", "КухнЯ");
-		semNet.insert("Тарелка", new InsertChildLinkResolver<>(0)).addParameter("Area", "Ку");
+		node = semNet.insert("Сковородка", new InsertChildLinkResolver<>(0));
+		semNet.insert("Кастрюля", new InsertChildLinkResolver<>(1));
+		semNet.insert("Плитка", new InsertChildLinkResolver<>(1));
+		semNet.insert("Тарелка", new InsertChildLinkResolver<>(1)).addLink(1, TypeLink.SYNONYM);
 	}
 	
 	@Ignore
@@ -48,10 +52,11 @@ public class SemanticNetTest {
 		System.out.println(list.toString());
 	}
 
-	@Ignore
+	
 	@Test
 	public void testRemove() {
-		fail("Not yet implemented");
+		semNet.remove(SelectBuilder.select().id(node.getId()).build(), new EasyRemoveLinkResolver<>());
+		System.out.println(semNet.select(SelectBuilder.select().id(0, 1, 2, 3, 4).build()));
 	}
 
 	@Ignore
@@ -93,9 +98,12 @@ public class SemanticNetTest {
 		System.out.println(n.toVerboseString());
 	}
 
+	@Ignore
 	@Test
 	public void testFind() {
-		
+		System.out.println(
+				semNet.find(
+						FindBuilder.find("area", "Кухна").build(null)));
 	}
 	
 	private static final String FILE_PATH = "/home/alex/semnet.dat";

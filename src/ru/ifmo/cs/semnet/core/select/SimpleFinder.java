@@ -27,7 +27,7 @@ public class SimpleFinder implements Finder {
 		if(parameters == null) {
 			parameters = new HashMap<>();
 		}
-		parameters.put(name, value);
+		parameters.put(name.toUpperCase(), value);
 	}
 	
 	public void setFindLocale(Locale locale) {
@@ -45,7 +45,7 @@ public class SimpleFinder implements Finder {
 		}
 		for(String key : parameters.keySet()) {
 			// если заданный параметр в узле есть
-			if(arg.containsKey(key)) {
+			if(SemNetUtils.containsWithIgnoreCase(arg.keySet(), key)) {
 				// если среди значений по данному ключу 
 				// есть такое как в наборе ограничителей
 				if(comparator.compare(arg.get(key), parameters.get(key))) {

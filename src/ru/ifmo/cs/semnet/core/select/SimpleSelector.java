@@ -10,7 +10,6 @@ import ru.ifmo.cs.semnet.core.Comparator;
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.Selector;
 import ru.ifmo.cs.semnet.core.TypeLink;
-import ru.ifmo.cs.semnet.core.exception.LangNotSupportedException;
 import ru.ifmo.cs.semnet.core.impl.SemNetUtils;
 
 /**
@@ -122,6 +121,7 @@ public class SimpleSelector implements Selector {
 		if(protectByParams == null) {
 			protectByParams = new HashMap<>();
 		}
+		name = name.toUpperCase();
 		if(!protectByParams.containsKey(name)) {
 			protectByParams.put(name, value);
 		}
@@ -150,7 +150,7 @@ public class SimpleSelector implements Selector {
 		}
 		for(String key : protectByParams.keySet()) {
 			// если заданный параметр в узле есть
-			if(nodeParams.containsKey(key)) {
+			if(SemNetUtils.containsWithIgnoreCase(nodeParams.keySet(), key)) {
 				// если среди значений по данному ключу 
 				// есть такое как в наборе ограничителей
 				if(comparator.compare(nodeParams.get(key), protectByParams.get(key))) {

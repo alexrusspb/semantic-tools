@@ -98,6 +98,12 @@ public class SemNet implements SemanticNetwork<DefaultNode> {
         }
         return false;
     }
+	
+	public void DEBUG() {
+		for(DefaultNode dn : storage.values()) {
+			System.out.println(dn.toVerboseString());
+		}
+	}
 
     @Override
     public DefaultNode insert(String view, 

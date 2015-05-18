@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import ru.ifmo.cs.semnet.core.LinkResolver;
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.TypeLink;
 
@@ -18,7 +17,7 @@ public class ImportPackage<T extends Node> {
 	
 	private Map<String, TypeLink> linkCandidates;
 	
-	private LinkResolver<T> resolver;
+	private String parentView;
 	
 	public ImportPackage() {
 		inputParameters = new HashMap<>();
@@ -64,11 +63,11 @@ public class ImportPackage<T extends Node> {
 		linkCandidates.put(viewLinkageNode, link);
 	}
 
-	public LinkResolver<T> getResolver() {
-		return resolver;
+	public String getParentView() {
+		return parentView;
 	}
 
-	public void setResolver(LinkResolver<T> resolver) {
-		this.resolver = resolver;
+	public void setParentView(String parentView) {
+		this.parentView = parentView;
 	}
 }

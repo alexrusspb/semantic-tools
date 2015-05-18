@@ -16,10 +16,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import ru.ifmo.cs.semnet.core.DefaultNode;
 import ru.ifmo.cs.semnet.core.Node;
-import ru.ifmo.cs.semnet.core.Options;
+import ru.ifmo.cs.semnet.core.resolve.Resolvers;
 import ru.ifmo.cs.semnet.importer.ImportDriver;
+import ru.ifmo.cs.semnet.importer.ImportListener;
+import ru.ifmo.cs.semnet.importer.ImportPackage;
 
 /**
  * Реализация простейшего потокового драйвера импорта.
@@ -32,7 +33,7 @@ import ru.ifmo.cs.semnet.importer.ImportDriver;
  * @author alex
  *
  */
-public class TextStreamImportDriver implements ImportDriver<Node> {
+public class TextStreamImportDriver<T extends Node> implements ImportDriver<T> {
 
 	private static final long serialVersionUID = -2059568814402703495L;
 
@@ -43,7 +44,7 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 	private static final String LOCALE_KEY = "-L";
 	
 	/* считанные ноды */
-	private ConcurrentLinkedQueue<Node> updates = new ConcurrentLinkedQueue<>();
+	private ConcurrentLinkedQueue<ImportPackage<T>> updates = new ConcurrentLinkedQueue<>();
 	
 	private Scanner scanner = null;
 	
@@ -122,6 +123,7 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 			String view = args[1];
 			Locale l = importForLocale;
 			Map<String, String> params = new HashMap<>();
+			String parent = null;
 			
 			/* конвертируем в лист, ибо так будет проще */
 			List<String> argsList = new ArrayList<>();
@@ -141,7 +143,7 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 			/* задаем родительский узел */
 			if(argsList.contains(FOR_KEYWORD)) {
 				int lastIndexOf = argsList.lastIndexOf(FOR_KEYWORD);
-				params.put(DefaultNode.PARENT_VIEW, argsList.get(lastIndexOf + 1));
+				parent = argsList.get(lastIndexOf + 1);
 				argsList.remove(lastIndexOf + 1);
 				argsList.remove(lastIndexOf);
 			}
@@ -157,13 +159,11 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 				}
 			}
 			
-			/* создаем узел, заполняем данными, сохраняем обновление */
-			DefaultNode newNode = new DefaultNode(view, l);
-			for(String parameter : params.keySet()) {
-				newNode.insertParam(l, parameter, params.get(parameter));
-			}
+			ImportPackage<T> pack = new ImportPackage<>();
+			pack.setView(view);
+			pack.setParentView(parent);
 			
-			updates.add(newNode);
+			updates.add(pack);
 		}
 	}
 	
@@ -173,17 +173,7 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 	}
 
 	@Override
-	public DefaultNode getNextNodeItem() {
-		return updates.poll();
-	}
-
-	@Override
-	public long getCountNewEntries() {
-		return updates.size();
-	}
-
-	@Override
-	public ObjectInputStream getNodesStream() {
+	public ObjectInputStream getPackagesStream() {
 		ObjectInputStream ois = null;
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -209,6 +199,17 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 	public String helpString() {
 		return "usage: IMPORT VIEW_OF_NEW_NODE [FOR VIEW_OF_PARENT_NODE] \n"
 				+ "		[OPT_NAME=OPT_VALUE ...] [-L locale_code]\n";
+	}
+
+	@Override
+	public ImportPackage<T> getNextPackage() {
+		return updates.poll();
+	}
+
+	@Override
+	public void subscribeOnImportEvent(ImportListener listener) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

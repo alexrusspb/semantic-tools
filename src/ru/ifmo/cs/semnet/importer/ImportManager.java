@@ -7,13 +7,11 @@ import java.util.concurrent.Executors;
 
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.SemanticNetwork;
+import ru.ifmo.cs.semnet.core.resolve.Resolvers;
 
 /**
  * Класс для управления подкачками новых семантических 
  * данных из внешних источников: из файлов, сети и т.д.
- * 
- * ** FIXME расширенные параметры настройки имрорта
- * 				+ выпилить костыль с PARENT_VIEW_OPTION
  * 
  * @author alex
  *
@@ -31,7 +29,7 @@ public class ImportManager <T extends Node> {
 	
 	private int cronTime = 10;
 	
-	private ImportManager(SemanticNetwork<T> semNet) {
+	public ImportManager(SemanticNetwork<T> semNet) {
 		if(semNet == null) {
 			throw new IllegalArgumentException("semantic network not defined");
 		}
@@ -97,7 +95,7 @@ public class ImportManager <T extends Node> {
 					elapsedTime = currentTime - startTime;
 					
 					// раз в назначенное время запускаем update
-					if(elapsedTime > 10 * 1000) {
+					if(elapsedTime > cronTime * 1000) {
 						forcedImport(ImportMode.ASYNC);
 						elapsedTime = 0;
 						startTime = new Date().getTime();
@@ -123,9 +121,10 @@ public class ImportManager <T extends Node> {
 				while(next != null) {
 					if(validatePackage(next)) {
 						
+						Node t = managedNetwork.insert(next.getView(), 
+							Resolvers.createChildInsertResolver(managedNetwork, next.getParentView()));
+						System.out.println(t.toVerboseString());
 						
-						
-						managedNetwork.insert(next.getView(), next.getResolver());
 						next = driver.getNextPackage();
 					}
 				}
@@ -140,7 +139,7 @@ public class ImportManager <T extends Node> {
 	}
 	
 	protected boolean validatePackage(ImportPackage<T> ip) {
-		if(ip.getView() != null && ip.getResolver() != null) {
+		if(ip.getView() != null && ip.getParentView() != null) {
 			return true;
 		}
 		return false;

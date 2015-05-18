@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import ru.ifmo.cs.semnet.core.Node;
 
@@ -18,9 +20,9 @@ import ru.ifmo.cs.semnet.core.Node;
 public class SemNetUtils {
 
 	/* NODE PARAMETERS */
-	public static final String VIEW_NAME_PARAMETER = "display";
+	public static final String VIEW_NAME_PARAMETER = "DISPLAY";
 	
-	public static final String USE_AREA_NAME_PARAMETER = "concept-area";
+	public static final String USE_AREA_NAME_PARAMETER = "CONCEPT-AREA";
 	
 	/* SPECIAL CONSTANTS */
 	public static final Long ROOT_NODE_ID = 0L;
@@ -50,5 +52,10 @@ public class SemNetUtils {
 		} catch (Exception ex) {
 			return null;
 		}
+	}
+	
+	public static boolean containsWithIgnoreCase(Set<String> set, String key) {
+		return set.stream().filter(s -> s.equalsIgnoreCase(key))
+				.collect(Collectors.toList()).size() > 0;
 	}
 }
