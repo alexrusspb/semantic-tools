@@ -1,7 +1,8 @@
 package ru.ifmo.cs.semnet.examples;
 
 import ru.ifmo.cs.semnet.core.Node;
-import ru.ifmo.cs.semnet.core.SemanticNetwork;
+import ru.ifmo.cs.semnet.core.impl.SemNet;
+import ru.ifmo.cs.semnet.core.impl.utils.SemNetUtils;
 import ru.ifmo.cs.semnet.importer.ImportManager;
 import ru.ifmo.cs.semnet.importer.impl.TextStreamImportDriver;
 
@@ -9,11 +10,9 @@ public class CreateAndUsingSemNetExample {
 
 	public static void main(String[] args) {
 		
-		Node root = new Node("Сущность", Node.RUSSIA);
+		SemNet semanticNetwork = new SemNet("Сущность", SemNetUtils.RUSSIA);
 		
-		SemanticNetwork<Node> semanticNetwork = new SemanticNetwork<Node>(root);
-		
-		TextStreamImportDriver driver = new TextStreamImportDriver(System.in, Node.RUSSIA);
+		TextStreamImportDriver driver = new TextStreamImportDriver(System.in, SemNetUtils.RUSSIA);
 		
 		ImportManager manager = ImportManager.createFor(semanticNetwork);
 		manager.registerDriver(driver);

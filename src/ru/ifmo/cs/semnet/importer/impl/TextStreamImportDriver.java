@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import ru.ifmo.cs.semnet.core.DefaultNode;
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.Options;
 import ru.ifmo.cs.semnet.importer.ImportDriver;
@@ -58,7 +59,7 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 		if(source != null) {
 			scanner = new Scanner(source);
 			if(loc == null) {
-				importForLocale = Options.getInstance().getDefaultLocale();
+				importForLocale = Locale.getDefault();
 			} else {
 				importForLocale = loc;
 			}
@@ -140,7 +141,7 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 			/* задаем родительский узел */
 			if(argsList.contains(FOR_KEYWORD)) {
 				int lastIndexOf = argsList.lastIndexOf(FOR_KEYWORD);
-				params.put(Node.PARENT_VIEW, argsList.get(lastIndexOf + 1));
+				params.put(DefaultNode.PARENT_VIEW, argsList.get(lastIndexOf + 1));
 				argsList.remove(lastIndexOf + 1);
 				argsList.remove(lastIndexOf);
 			}
@@ -157,7 +158,7 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 			}
 			
 			/* создаем узел, заполняем данными, сохраняем обновление */
-			Node newNode = new Node(view, l);
+			DefaultNode newNode = new DefaultNode(view, l);
 			for(String parameter : params.keySet()) {
 				newNode.insertParam(l, parameter, params.get(parameter));
 			}
@@ -172,7 +173,7 @@ public class TextStreamImportDriver implements ImportDriver<Node> {
 	}
 
 	@Override
-	public Node getNextNodeItem() {
+	public DefaultNode getNextNodeItem() {
 		return updates.poll();
 	}
 

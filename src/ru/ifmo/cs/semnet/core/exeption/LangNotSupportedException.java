@@ -1,6 +1,8 @@
-package ru.ifmo.cs.semnet.core;
+package ru.ifmo.cs.semnet.core.exeption;
 
 import java.util.Locale;
+
+import ru.ifmo.cs.semnet.core.Node;
 
 public class LangNotSupportedException extends Exception {
 

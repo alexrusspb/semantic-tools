@@ -5,11 +5,9 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import ru.ifmo.cs.semnet.core.ModifyOptions;
 import ru.ifmo.cs.semnet.core.Node;
-import ru.ifmo.cs.semnet.core.Options;
-import ru.ifmo.cs.semnet.core.SelectorBuilder;
 import ru.ifmo.cs.semnet.core.SemanticNetwork;
+import ru.ifmo.cs.semnet.core.impl.utils.SelectBuilder;
 
 /**
  * Класс для управления подкачками новых семантических 
@@ -76,7 +74,7 @@ public class ImportManager {
 		if(!backgroundMode) {
 			backgroundMode = true;
 		} else {
-			// если запущен, то dвыходим
+			// если запущен, то выходим
 			return;
 		}
 		
@@ -95,7 +93,7 @@ public class ImportManager {
 					elapsedTime = currentTime - startTime;
 					
 					// раз в назначенное время запускаем update
-					if(elapsedTime > Options.getInstance().getCronTimeForUpdateImport() * 1000) {
+					if(elapsedTime > 10 * 1000) {
 						forcedImport(ImportMode.ASYNC);
 						elapsedTime = 0;
 						startTime = new Date().getTime();
@@ -121,14 +119,15 @@ public class ImportManager {
 				while(next != null) {
 					
 					/* извлекаем представление родительского узла */
-					Object parent = next.selectParamInSafemode(next.getDefaultLocale(), Node.PARENT_VIEW);
+					// FIXME
+					Object parent = null;//next.selectParamInSafemode(next.getDefaultLocale(), DefaultNode.PARENT_VIEW);
 					
 					Node n = null;
 					
 					/* ищем его в сети */
 					if(parent != null) {
-						n = managedNetwork.select(SelectorBuilder.Create(next.getDefaultLocale())
-								.appendParameter(Node.VIEW_OPTION, parent.toString()).build());
+						n = managedNetwork.select(SelectBuilder.Create(next.getDefaultLocale())
+								.appendParameter(DefaultNode.VIEW_OPTION, parent.toString()).build());
 					}
 					
 					ModifyOptions mo = null;

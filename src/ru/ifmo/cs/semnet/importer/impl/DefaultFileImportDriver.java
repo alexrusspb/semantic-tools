@@ -2,10 +2,10 @@ package ru.ifmo.cs.semnet.importer.impl;
 
 import java.io.ObjectInputStream;
 
-import ru.ifmo.cs.semnet.core.Node;
+import ru.ifmo.cs.semnet.core.DefaultNode;
 import ru.ifmo.cs.semnet.importer.ImportDriver;
 
-public class DefaultFileImportDriver implements ImportDriver<Node> {
+public class DefaultFileImportDriver implements ImportDriver<DefaultNode> {
 
 	private static final long serialVersionUID = 4928270907055762930L;
 
@@ -20,7 +20,7 @@ public class DefaultFileImportDriver implements ImportDriver<Node> {
 	}
 
 	@Override
-	public Node getNextNodeItem() {
+	public DefaultNode getNextNodeItem() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,418 +1,296 @@
 package ru.ifmo.cs.semnet.core;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import ru.ifmo.cs.semnet.core.exeption.LangNotSupportedException;
 
 /**
- * Класс описывающий узел семантической сети.
+ * Описание поведения и функциональности узлов семантической сети.
+ * Узел в общем случае  представляет собой набор ссылок на другие 
+ * узлы,   набор  характеристик  (параметров)  заданного  понятия, 
+ * хранение которых обеспечивается для конкретных заданных локалей.
+ * Т.е. параметр  с одним  именем  может  характеризовать  узел по
+ * разному  для разных  локалей.  Примером такого  параметра может 
+ * являться представление  понятия в  текстовом виде.  Для каждого 
+ * языка параметр будет имет свое представление. 
  * 
- * FIXME переделать forEach-методы на stream'ы
- * 
- * FIXME подумать над хранилищем словаря 
- * целиком, а в нодах хранить только ссылки
- * 
+ * @lastUpdate 17 мая 2015 г.
  * @author Pismak Alexey
  */
-public class Node implements Serializable {
-
-	private static final long serialVersionUID = -7180176353700448140L;
-
-	/* для общего параметра для всех локалей используй Locale.ROOT */
-	private Map<Locale, Map<String, Object>> params;
-	
-	/* ссылки на другие узлы, связанные с текущим */
-	private Map<Node, NodeLink> linksNodes;
-	
-	/* Helper'ы */ // FIXME вынести это в отдельные классы
-	public static final Locale RUSSIA = new Locale("ru");
-	public static final String VIEW_OPTION = "view";
-	public static final String PARENT_VIEW = "parent";
-	
-	/* используемое по умолчанию представление */
-	private String bufferView = null;
-	
-	/* используемая по умолчанию локаль */
-	private Locale bufferLocale = null;
+public interface Node extends Serializable {
 	
 	/**
-	 * Инициализация узла с параметром представления узла
-	 * для локали по умолчанию.
-	 * 
-	 * @param view - отображение понятия узла
-	 * @see Options.getDefaultLocale
+	 * @return Уникальный идентификатор узла, полученный при его создании.
 	 */
-	public Node(String view) {
-		this(view, null);
-	}
+	long getId();
 	
 	/**
-	 * Инициализация узла с параметром представления
-	 * узла для назначенной локали.
-	 * 
-	 * @param view - отображение понятия узла
-	 * @param loc - для какой локали данное отображение
+	 * @return возвращает строку, которая определяет представление
+	 * 			понятия в текстовом виде на естественном языке для
+	 * 			локали по умолчанию. Если представления нет для
+	 * 			этой локали, то получим первое найденное.
 	 */
-	public Node(String view, Locale loc) {
-		params = new HashMap<>();
-		linksNodes = new HashMap<>();
-		
-		Locale l = (loc == null) ? Options.getInstance().getDefaultLocale() : loc;
-		
-		bufferLocale = l;
-		
-		params.put(l, new HashMap<String, Object>());
-		
-		if(view != null) {
-			bufferView = view;
-			params.get(l).put(VIEW_OPTION, view);
-		}
-	}
+	String getView();
 	
 	/**
-	 * Чтение параметра по умолчанию
+	 * Поиск представления для заданной локали
 	 * 
-	 * @return представление узла
+	 * @param locale для какой локали будем искать представление
+	 * @return возвращает строку, которая определяет представление
+	 * 			понятия в текстовом виде на естественном языке
+	 * @throws LangNotSupportedException
 	 */
-	public String getDefaultView() {
-		return bufferView;
-	}
+	String getView(Locale locale) throws LangNotSupportedException;
 	
 	/**
-	 * Чтение параметра по умолчанию
+	 * Получение списка дочерних узлов понятия
 	 * 
-	 * @return локаль узла
+	 * @return список узлов сети, являющихся дочерними
 	 */
-	public Locale getDefaultLocale() {
-		return bufferLocale;
-	}
+	List<Node> getChilds();
 	
 	/**
-	 * Метод доступа к объету параметров
+	 * Получение списка узлов, связь с которыми 
+	 * имеет заданный аргументом тип
 	 * 
-	 * @return - карта параметров понятия
+	 * @param type тип искомых связей. Если null, то
+	 * 			возвращаются все типы связей
+	 * @return список узлов с искомыми связями
 	 */
-	protected Map<Locale, Map<String, Object>> getParams() {
-		return params;
-	}
+	List<Node> getLinks(TypeLink type);
 	
 	/**
-	 * Метод доступа к объету параметров
-	 * 
-	 * @param newParams - новая карта параметров понятия
+	 * @return все связи данного узла в сети
 	 */
-	protected void setParams(Map<Locale, Map<String, Object>> newParams) {
-		if(newParams != null) {
-			params = newParams;
-		}
-	}
-
-	/**
-	 * Метод доступа к ссылкам на другие узлы сети
-	 * 
-	 * @return карта ссылок на узлы сети
-	 */
-	public Map<Node, NodeLink> getLinks() {
-		return linksNodes;
-	}
+	Map<Long, TypeLink> getLinks();
 	
 	/**
-	 * Метод доступа к ссылкам на другие узлы сети
+	 * Добавление новой ссылки в узел
 	 * 
-	 * @param новая карта ссылок на узлы сети
+	 * @param idNode идентификатор узла на который будем ссылаться
+	 * @param type тип устанавливаемой с ним связи
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
 	 */
-	protected void setLinks(HashMap<Node, NodeLink> newLinks) {
-		if(newLinks != null) {
-			linksNodes = newLinks;
-		}
-	}
+	boolean addLink(long idNode, TypeLink type);
 	
 	/**
-	 * Метод для извлечения всех параметров узла по имен 
-	 * параметра. При этом не играет роли к какой локали
-	 * относится параметр с заданным именем. 
+	 * Удаление связи с заданным узлом
 	 * 
-	 * @param name - имя параметра
-	 * @return - набор найденных параметров. Может быть пустым.
+	 * @param idNode идентификатор заданного узла
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
 	 */
-	public ArrayList<Object> selectParams(String name) {
-		
-		return (ArrayList<Object>) getParams().values().stream()
-				.map(v -> v.get(name))
-				.filter(pV -> pV != null)
-				.collect(Collectors.toList());
-	}
+	boolean removeLink(long idNode);
 	
 	/**
-	 * Извлечение параметра узла сети по имени параметра.
-	 * При этом используется локаль по умолчанию.
+	 * Удаление всех ссылок заданного типа
 	 * 
-	 * @param name - имя искомого параметра
+	 * @param type тип ссылок, которые будут удалены
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
+	 */
+	boolean removeLinks(TypeLink type);
+	
+	/**
+	 * Удаление всех ссылок, кроме ссылки типа TypeLink.PARENT.
+	 */
+	void clearLinks();
+	
+	/**
+	 * Вызывается перед отключением узла от сети.
+	 * Метод очищает все ссылки на все виды узлов,
+	 * а так же удаляет все параметры и локали.
+	 */
+	void onRemoveNode();
+	
+	/**
+	 * Добавление дочернего узла сети
+	 * 
+	 * @param idNode идентификатор узла
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
+	 */
+	boolean addChild(long idNode);
+	
+	/**
+	 * Удаление дочернего элемента узла
+	 * 
+	 * @param idChild идентификатор дочернего узла сети
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
+	 */
+	boolean removeChild(long idChild);
+	
+	/**
+	 * @return получение ссылки на дочерний узел
+	 */
+	Node getParentNode();
+	
+	/**
+	 * Смена родительского узла сети. Данным методом можно
+	 * переместить поддерево заданного узла в другое место сети
+	 * 
+	 * @param newParentId
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
+	 */
+	boolean changeParent(long newParentId);
+	
+	/**
+	 * Получение значения параметра узла для конкретной
+	 * 					локали (языка) по имени параметра
+	 * 
+	 * @param parameterName имя искомого параметра
+	 * @param locale из какой локали искомый параметр
 	 * @return значение искомого параметра
 	 * @throws LangNotSupportedException
-	 * @see Options.getDefaultLocale
 	 */
-	public Object selectParam(String name) throws LangNotSupportedException {
-		return selectParam(Options.getInstance().getDefaultLocale(), name);
-	}
+	Object getValueLocalizedParameter(String parameterName, Locale locale) throws LangNotSupportedException;
 	
 	/**
-	 * Извлечение параметра понятия с заданным именем для 
-	 * конкретной локали. 
+	 * Получение имени параметра узла для конкретной
+	 * локали (языка) по значению параметра
 	 * 
-	 * @param locale - в какой локали искать параметр
-	 * @param name - имя искомого понятия
-	 * @return значение параметра понятия
+	 * @param parameterValue значение искомого параметра
+	 * @param locale из какой локали искомый параметр
+	 * @return имя искомого параметра
 	 * @throws LangNotSupportedException
 	 */
-	public Object selectParam(Locale locale, String name) throws LangNotSupportedException {
-		if(locale == null) {
-			locale = getDefaultLocale();
-		}
-		Map<String, Object> paramsForLang = getParams().get(locale);
-		if(paramsForLang != null) {
-			return paramsForLang.get(name);
-		}
-		throw new LangNotSupportedException(locale, this);
-	}
+	String getNameLocalizedParameter (Object parameterValue, Locale locale) throws LangNotSupportedException;
 	
 	/**
-	 * Костыль - выборка характеристики сети без try-catch
+	 * Получение набора всех параметров узла по заданной локали
 	 * 
-	 * @param l - неоходимая локаль
-	 * @param name - название характеристики узла
-	 * @return - значение характеристики
+	 * @param locale для какой локали осуществляем поиск
+	 * @return набор пар (key -> value) с именами и значениями параметров
+	 * @throws LangNotSupportedException
 	 */
-	public Object selectParamInSafemode(Locale l, String name) {
-		try {
-			return selectParam(l, name);
-		} catch (LangNotSupportedException ex) {
-			return null;
-		}
-	}
+	Map<String, Object> getAllLocalizedParameters(Locale locale) throws LangNotSupportedException;
 	
 	/**
-	 * Внедрение нового параметра в понятие.
-	 * Если такой параметр уже есть, то он не
-	 * меняется. Используется локаль по умолчанию.
-	 * 
-	 * @param name - имя нового параметра
-	 * @param value - значение нового параметра
-	 * @return <b>true</b> если новое значение 
-	 * 			внедрено, иначе <b>false</b>
+	 * @return список локалей, которые поддерживает узел, т.е.
+	 * 		узел содержит параметры, заданные именно для этой локали
 	 */
-	public boolean insertParam(String name, Object value) {
-		return insertParam(Options.getInstance().getDefaultLocale(), name, value);
-	}
+	List<Locale> getSupportedLocales();
 	
 	/**
-	 * Внедрение нового параметра в понятие. Если
-	 * такой параметр уже есть, то он не меняется.
+	 * Проверка на поддержку узлом заданной локали
 	 * 
-	 * @param locale - для какой локали параметр
-	 * @param name - имя нового параметра
-	 * @param value - значение нового параметра
-	 * @return <b>true</b> если новое значение 
-	 * 			внедрено, иначе <b>false</b>
+	 * @param locale проверяемая локаль
+	 * @return <code>true</code> если поддерживает, иначе <code>false</code>
 	 */
-	public boolean insertParam(Locale locale, String name, Object value) {
-		Map<String, Object> paramsForLang = getParams().get(locale);
-		if(paramsForLang == null) {
-			paramsForLang = new HashMap<String, Object>();
-			getParams().put(locale, paramsForLang);
-		}
-		Object currentValue = paramsForLang.get(name);
-		if(currentValue != null) {
-			return false;
-		}
-		paramsForLang.put(name, value);
-		return true;
-	}
+	boolean isSupportedLocale(Locale locale);
 	
 	/**
-	 * Модификация существующего параметра узла.
-	 * Используется локаль по умолчанию.
+	 * Получение первого найденного параметра с 
+	 * заданным именем, не зависимо от локали
 	 * 
-	 * @param name - имя параметра
-	 * @param value - значение параметра
+	 * @param name имя искомого параметра
+	 * @return значение искомого параметра
 	 */
-	public void modifyParam(String name, Object value) throws LangNotSupportedException {
-		modifyParam(Options.getInstance().getDefaultLocale(), name, value);
-	}
+	Object getParameterByName(String name);
 	
 	/**
-	 * Модификация существующего параметра узла.
-	 * Если параметра нет, то он не добавляется.
+	 * Получение всех параметров узла всех локалей с заданным именем
 	 * 
-	 * @param locale - в какой локали модифицируем параметр
-	 * @param name - имя параметра
-	 * @param value - новое значение
+	 * @param name имя искомого параметра
+	 * @return список значений искомого параметра
 	 */
-	public void modifyParam(Locale locale, String name, Object value) throws LangNotSupportedException {
-		Map<String, Object> paramsForLang = getParams().get(locale);
-		if(paramsForLang == null) {
-			throw new LangNotSupportedException(locale, this);
-		}
-		Object currentValue = paramsForLang.get(name);
-		if(currentValue != null) {
-			paramsForLang.put(name, value);
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return getDefaultView();
-	}
+	List<Object> getAllParametersByName(String name);
 	
 	/**
-	 * Подробный вывод о узле сети:
-	 * 	все его характеристики и краткие ссылки на другие узлы
-	 * 
-	 * @return - строка подробного описания узла
+	 * доступ ко всем параметрам без учета локалей
+	 * @return
 	 */
-	public String toVerboseString() {
-		StringBuilder sb = new StringBuilder();
-		
-		for(Locale l : getParams().keySet()) {
-			sb.append("PARAMETERS FOR LOCALE [ ");
-			sb.append(l.toString());
-			sb.append(" ]:");
-			
-			for(String param : getParams().get(l).keySet()) {
-				sb.append("\n  [");
-				sb.append(param);
-				sb.append("] -> ");
-				sb.append(selectParamInSafemode(l, param));
-			}
-			sb.append("\n");
-		}
-		
-		sb.append("LINKAGE SET");
-		for(Node n : getLinks().keySet()) {
-			sb.append("\n  [связь: ");
-			sb.append(getLinks().get(n));
-			sb.append("]: -> [ вид: \"");
-			sb.append(n.bufferView);
-			sb.append("\"]");
-		}
-		
-		return sb.toString();
-	}
+	Map<String, List<Object>> getAllParameters();
 	
 	/**
-	 * Чтение всех ссылок сети, которые являются 
-	 * дочерними по отношению к текущей. Дочерний
-	 * узел содержит понятие, которое имеет более
-	 * конкретный смысл в какой либо области.
+	 * Добавления нового параметра узла
 	 * 
-	 * @return - все дочерние узлы
+	 * @param name имя параметра
+	 * @param value значение параметра
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
 	 */
-	public ArrayList<Node> getChildNodes() {
-		ArrayList<Node> result = new ArrayList<>();
-		// перебираем все ноды в ссылках
-		for(Node n : getLinks().keySet()) {
-			// если тип очередной ссылки CHILD, добавляем к результатам
-			if(getLinks().get(n).equals(NodeLink.CHILD)) {
-				result.add(n);
-			}
-		}
-		return result;
-	}
+	boolean addParameter(String name, Object value);
 	
 	/**
-	 * Смена родителя текущего узла (перемещение узла в другую часть сети)
+	 * Добавление локализованного параметра
 	 * 
-	 * @param newParent - если null, то просто удалается текущий родитель
+	 * @param name имя параметра
+	 * @param value значение параметра
+	 * @param locale для какой локали данный параметр
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
 	 */
-	public void changeParent(Node newParent) {
-		if(getParent() != null) {
-			for(Node n : getLinks().keySet()) {
-				if(getLinks().get(n).equals(NodeLink.PARENT)) {
-					getLinks().remove(n);
-					break;
-				}
-			}
-		}
-		
-		if(newParent != null) {
-			getLinks().put(newParent, NodeLink.PARENT);
-		}
-	}
+	boolean addParameter(String name, Object value, Locale locale);
 	
 	/**
-	 * Если у узла нет родителя, то он будет связан с текущим, как дочерний
+	 * Удаление всех параметров узла по имени параметра. 
+	 * Исключение - представление узла.
 	 * 
-	 * @param child - узел, претендующий стать дочерним
+	 * @param name имя удаляемых параметров
 	 */
-	public void addChild(Node child) {
-		if(child != null) {
-			getLinks().put(child, NodeLink.CHILD);
-			
-			child.changeParent(this);
-		}
-	}
-	
-	private Node removeNode;
+	void removeParameter(String name);
 	
 	/**
-	 * Удаление дочернего ссылки на дочерний узел по заданным параметрам
+	 * Удаление локализованного параметра
 	 * 
-	 * @param view - представление узла
-	 * @param locale - в заданной локали
+	 * @param name имя параметра
+	 * @param locale локаль в которой будет удален параметр
+	 * @return объект, который ассоциировался с данным папаметром
+	 * @throws LangNotSupportedException
 	 */
-	public void removeChild(String view, Locale locale) {
-		removeNode = null;
-		getLinks().forEach((k, v) -> {
-			if(v.equals(NodeLink.CHILD)) {
-				Object paramValue = k.selectParamInSafemode(locale, VIEW_OPTION);
-				if(paramValue != null && paramValue.equals(view)) {
-					removeNode = k;
-				}
-			}
-		});
-		
-		if(removeNode != null) {
-			getLinks().remove(removeNode);
-		}
-	}
-	
-	private Node resParent;
+	Object removeLocalizedParameter(String name, Locale locale) throws LangNotSupportedException;
 	
 	/**
-	 * Поиск ссылки на родительский узел
+	 * Удаление параметров всей локали. Некоторые параметры
+	 * допустимо оставить, если они являются служебной или
+	 * или иной специальной информацией об узле
 	 * 
-	 * @return - родительский узел
+	 * @param locale удаляемая локаль
+	 * @throws LangNotSupportedException
 	 */
-	public Node getParent() {
-		resParent = null;
-		getLinks().forEach((k, v) -> {
-			if(v.equals(NodeLink.PARENT)) {
-				resParent = k;
-			}
-		});
-		return resParent;
-	}
+	void removeLocale (Locale locale) throws LangNotSupportedException;
 	
 	/**
-	 * Подсчет количества всех дочерних элементов "в глубину"
+	 * Изменение параметров узла для всех локалей
 	 * 
-	 * @return - число дочерних элементов
+	 * @param name имя параметра, который следует изменить. может
+	 * 		быть <code>null</code> если нужен поиск по значению
+	 * @param value значение параметра, который следует изменить.
+	 * 		может быть <code>null</code> если нужен поиск по имени
+	 * @param newValue новое значение узла. может быть <code>null</code>
+	 * 		если модификации не касаются значения
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
 	 */
-	public long getCountChild() {
-		Collection<Node> childs = getChildNodes();
-		if(childs.size() == 0) {
-			return 0;
-		} else {
-			long count = 0;
-			for(Node n : childs) {
-				count++;
-				count += n.getCountChild();
-			}
-			return count;
-		}
-	}
+	void modifyParameters (String name, Object value, Object newValue);
+	
+	/**
+	 * Изменение параметров узла для заданной локали
+	 * 
+	 * @param name имя параметра, который следует изменить. может
+	 * 		быть <code>null</code> если нужен поиск по значению
+	 * @param value значение параметра, который следует изменить.
+	 * 		может быть <code>null</code> если нужен поиск по имени.
+	 * @param newValue новое значение узла. может быть <code>null</code>
+	 * 		если модификации не касаются значения
+	 * @param locale для какой локали будут вноситься модификации
+	 * @return <code>true</code> если операция завершилась
+	 * 				успешно, иначе <code>false</code>
+	 * @throws LangNotSupportedException
+	 */
+	boolean modifyLocalizedParameter (String name, Object value, 
+		Object newValue, Locale locale) throws LangNotSupportedException;
+	
+	/**
+	 * @return полная информация об узле сети
+	 */
+	String toVerboseString();
+	
 }
