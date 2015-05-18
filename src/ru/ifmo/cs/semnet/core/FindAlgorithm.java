@@ -1,56 +1,95 @@
 package ru.ifmo.cs.semnet.core;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.List;
 
-public enum FindAlgorithm {
+/**
+ * Перечисление доступных алгоритмов неточного поиска
+ * с реализацией компараторов этих алгоритмов
+ * 
+ * @author Pismak Alexey
+ * @lastUpdate 18 мая 2015 г.
+ */
+public enum FindAlgorithm implements Comparator {
 	
 	/**
 	 * Алгоритм N-gramm для неточного поиска,
 	 * основанный на количественной оценке
 	 * совпадений фрагментов слов
 	 */
-	NGRAMM,
+	NGRAMM;
 	
 	/**
-	 * Алгоритм расширенной выборки путем перебора
-	 * и перестановки букв исходного слова буквами
-	 * алфавита.
+	 * Метод, осуществляющий выбор текущего алгоритма
+	 * и передачи ему управления для сравнения строк
+	 * (не смотря на то, что реализован один алгоритм,
+	 * теоретически их может быть сколько угодно)
+	 * 
+	 * @param checkedWord проверяемое слово
+	 * @param pattern шалон (слово которое стоит в условиях поиска)
+	 * @return <code>true</code> если строки 
+	 * 			прошли проверку, иначе <code>false</code>
 	 */
-	EXPANSION_SELECT_PERMUTATION;
-	
-	private FindAlgorithm() {
-		supportLanguages = new HashMap<>();
-	}
-	
-	private Map<Locale, Character[]> supportLanguages;
-	
-	public void registerAlphabet(Locale locale, Character[] letters) {
-		if(!supportLanguages.containsKey(locale)) {
-			supportLanguages.put(locale, letters);
-		}
-	}
-	
-	public boolean compare(String checkedWord, String pattern, Locale locale) {
-		if(supportLanguages.containsKey(locale)) {
-			if(this.equals(NGRAMM)) {
-				return nGrammComparator(checkedWord, pattern);
-			}
-			if(this.equals(EXPANSION_SELECT_PERMUTATION)) {
-				return expansionSelect(checkedWord, pattern);
-			}
+	public boolean compare(String checkedWord, String pattern) {
+		if(this.equals(NGRAMM)) {
+			return nGrammComparator(checkedWord, pattern);
 		}
 		return false;
 	}
 	
+	/**
+	 * Метод N-Gramm. Перебор фрагментов слова и подсчет
+	 * процента совпадений фрагментов.
+	 * 
+	 * @param word проверяемое слово
+	 * @param pattern шалон (слово которое стоит в условиях поиска)
+	 * @return <code>true</code> если строки 
+	 * 			прошли проверку, иначе <code>false</code>
+	 */
 	private boolean nGrammComparator(String word, String pattern) {
-		// TODO 
-		return false;
+		// не работает со словами разной длины
+		if(word.length() - pattern.length() != 0) {
+			return false;
+		}
+		int ok = 0, all = 0;
+		// расчет длины n-грамм
+		int l = calcLengthNGramm(word.length());
+		// сравнение N-грамм без учета регистра
+		for(int i = 0; i < word.length() - l + 1; i++) {
+			if( word.substring(i, i + l)
+					.equalsIgnoreCase(pattern.substring(i, i + l))) {
+				ok++;
+			}
+			all++;
+		}
+		// расчет процента совпадений
+		if( ((float)ok / (float)all) < 0.49f ) {
+			return false;
+		}
+		return true;
 	}
 	
-	private boolean expansionSelect(String word, String pattern) {
-		// TODO
-		return false;
+	/* вычисление длин N-грамм  */
+	private int calcLengthNGramm(int wl) {
+		if(wl <= 6) {
+			return 2;
+		}
+		if(wl <= 12) {
+			return 3;
+		}
+		return 4;
+	}
+
+	@Override
+	public boolean compare(List<Object> network, Object selectorKey) {
+		try {
+			for(Object o : network) {
+				if(  compare(  ((String)o), ((String)selectorKey)  )  ) {
+					return true;
+				}
+			}
+			return false;
+		} catch (ClassCastException cce) {
+			return network.contains(selectorKey);
+		}
 	}
 }

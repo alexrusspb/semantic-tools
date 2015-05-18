@@ -10,9 +10,8 @@ import java.util.stream.Collectors;
 
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.TypeLink;
-import ru.ifmo.cs.semnet.core.exeption.LangNotSupportedException;
-import ru.ifmo.cs.semnet.core.exeption.MutatedNodeException;
-import ru.ifmo.cs.semnet.core.impl.utils.SemNetUtils;
+import ru.ifmo.cs.semnet.core.exception.LangNotSupportedException;
+import ru.ifmo.cs.semnet.core.exception.MutatedNodeException;
 
 /**
  * Реализация узла сети, используемая в ВКР как тип узлов по умолчанию
@@ -42,6 +41,10 @@ public class DefaultNode implements Node {
 	/* идентификатор узла в сети */
 	private final long ident;
 	
+	/* 
+	 * служебная локаль. узел не может сущест-
+	 * вовать будучи совсем не локализованным 
+	 */
 	private final Locale initLocale;
 	
 	/**
@@ -130,9 +133,11 @@ public class DefaultNode implements Node {
 		return links;
 	}
 
-	// FIXME добавить обратное линкование: a -> b => b -> a
 	@Override
 	public boolean addLink(long idNode, TypeLink type) {
+		if(storage.get(idNode) == null) {
+			throw new MutatedNodeException(this, "on add link to => " + idNode);
+		}
 		// если узел уже ссылается на узел с таким id
 		if(links.containsKey(idNode) || type == null) {
 			return false;
@@ -146,6 +151,8 @@ public class DefaultNode implements Node {
 		}
 		// остальные типы ссылок просто добавляем
 		links.put(idNode, type);
+		// обратное линкование (если А синоним Б, то обратное тоже верно)
+		storage.get(idNode).addLink(getId(), type);
 		return true;
 	}
 
@@ -162,6 +169,8 @@ public class DefaultNode implements Node {
 			return removeChild(idNode);
 		}
 		links.remove(idNode);
+		// удаление обратного линкования
+		storage.get(idNode).removeLink(getId());
 		return true;
 	}
 
@@ -194,11 +203,14 @@ public class DefaultNode implements Node {
 
 	@Override
 	public void onRemoveNode() {
+		// очистка ссылок
 		links.clear();
 		links = null;
+		// очистка рараметров для локалей
 		params.values().forEach(map -> {
 			map.clear();
 		});
+		// очистка самих локалей
 		params.clear();
 		params = null;
 	}
@@ -223,12 +235,16 @@ public class DefaultNode implements Node {
 
 	@Override
 	public boolean removeChild(long idChild) {
+		if(!links.containsKey(idChild)) {
+			return false;
+		}
 		if(links.containsKey(idChild) && links.get(idChild).equals(TypeLink.CHILD)) {
 			Node node = storage.get(idChild);
 			if(node == null) {
 				throw new MutatedNodeException(this, "attempt remove child, "
 					+ "which not found in nodes storage [CHILD_ID = " + idChild + "]");
 			}
+			// по умолчанию, удаляемый дочерний узел цепляем к корневому
 			if(node.changeParent(SemNetUtils.ROOT_NODE_ID)) {
 				links.remove(idChild);
 			}
@@ -240,6 +256,7 @@ public class DefaultNode implements Node {
 	public Node getParentNode() {
 		List<Node> parents = getLinks(TypeLink.PARENT);
 		if(parents.size() > 1) {
+			// целостность данных
 			throw new MutatedNodeException(this, "Node has more one parent link");
 		}
 		return parents.size() > 0 ? parents.get(0) : null;
@@ -247,14 +264,19 @@ public class DefaultNode implements Node {
 
 	@Override
 	public boolean changeParent(long newParentId) {
-		if(!storage.containsKey(newParentId)) {
+		if(!storage.containsKey(newParentId) 
+				|| links.containsKey(newParentId)) {
 			return false;
 		}
 		Node parent = getParentNode();
 		if(parent != null) {
 			links.remove(parent.getId());
+			// удаляем обратную ссылку
+			parent.removeChild(getId());
 		}
 		links.put(newParentId, TypeLink.PARENT);
+		// обратная линковка: уведомляем о новой дочерней ноде
+		storage.get(newParentId).addChild(getId());
 		return true;
 	}
 

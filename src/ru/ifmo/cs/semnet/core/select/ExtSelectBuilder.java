@@ -1,4 +1,4 @@
-package ru.ifmo.cs.semnet.core.impl.utils;
+package ru.ifmo.cs.semnet.core.select;
 
 import ru.ifmo.cs.semnet.core.Selector;
 import ru.ifmo.cs.semnet.core.TypeLink;

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Описатель семантической сети
+ * Описатель семантической сети. Определяет все доступные опреции с сетью.
  * 
  * @author Pismak Alexey
  * @lastUpdate 17 мая 2015 г.
@@ -38,7 +38,7 @@ public interface SemanticNetwork<T extends Node> {
 	 * @return <code>true</code> если операция успешно выполнена, 
 	 * 								иначе <code>false</code>
 	 */
-	boolean remove(Selector selector, LinkResolver resolver);
+	boolean remove(Selector selector, LinkResolver<? super T> resolver);
 	
 	/**
 	 * Вставка нового узла в сеть
@@ -50,7 +50,7 @@ public interface SemanticNetwork<T extends Node> {
 	 * 				модификации логической структуры данных сети
 	 * @return ссылка на добавленный узел сети
 	 */
-	T insert(String view, LinkResolver resolver);
+	T insert(String view, LinkResolver<? super T> resolver);
 	
 	/**
 	 * Вставка нового узла в сеть
@@ -63,7 +63,7 @@ public interface SemanticNetwork<T extends Node> {
 	 * 				модификации логической структуры данных сети
 	 * @return ссылка на добавленный узел сети
 	 */
-	T insert(String view, Locale locale, LinkResolver resolver);
+	T insert(String view, Locale locale, LinkResolver<? super T> resolver);
 	
 	/**
 	 * Поиск понятий в сети, используя алгоритмы неточного 

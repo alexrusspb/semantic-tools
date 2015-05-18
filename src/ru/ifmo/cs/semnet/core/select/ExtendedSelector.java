@@ -1,4 +1,4 @@
-package ru.ifmo.cs.semnet.core.impl.utils;
+package ru.ifmo.cs.semnet.core.select;
 
 import java.util.HashMap;
 import java.util.List;

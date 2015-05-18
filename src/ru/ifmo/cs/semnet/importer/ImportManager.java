@@ -7,7 +7,6 @@ import java.util.concurrent.Executors;
 
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.SemanticNetwork;
-import ru.ifmo.cs.semnet.core.impl.utils.SelectBuilder;
 
 /**
  * Класс для управления подкачками новых семантических 
@@ -19,17 +18,23 @@ import ru.ifmo.cs.semnet.core.impl.utils.SelectBuilder;
  * @author alex
  *
  */
-public class ImportManager {
+public class ImportManager <T extends Node> {
 
 	/* Зарегестрированные драйверы импорта */
-	private ArrayList<ImportDriver<? extends Node>> regDrivers;
+	private ArrayList<ImportDriver<T>> regDrivers;
 	
 	/* Управляемая семантическая сеть */
-	private SemanticNetwork<? extends Node> managedNetwork;
+	private SemanticNetwork<T> managedNetwork;
 	
+	/* пул */
 	private ExecutorService importPool = null;
 	
-	private ImportManager(SemanticNetwork<? extends Node> semNet) {
+	private int cronTime = 10;
+	
+	private ImportManager(SemanticNetwork<T> semNet) {
+		if(semNet == null) {
+			throw new IllegalArgumentException("semantic network not defined");
+		}
 		regDrivers = new ArrayList<>();
 		managedNetwork = semNet;
 		importPool = Executors.newFixedThreadPool(2);
@@ -41,7 +46,7 @@ public class ImportManager {
 	 * 
 	 * @param driver - реализация источника семантических узлов
 	 */
-	public void registerDriver(ImportDriver<? extends Node> driver) {
+	public void registerDriver(ImportDriver<T> driver) {
 		
 		if(driver != null && !regDrivers.contains(driver)) {
 			regDrivers.add(driver);
@@ -77,7 +82,6 @@ public class ImportManager {
 			// если запущен, то выходим
 			return;
 		}
-		
 		Executors.newSingleThreadExecutor().execute(new Runnable() {
 			
 			@Override
@@ -109,67 +113,47 @@ public class ImportManager {
 	 * производит вставку новых данных в контролируемую импортером сеть
 	 */
 	private void importData() {
-		for(ImportDriver<?> driver : regDrivers) {
+		for(ImportDriver<T> driver : regDrivers) {
 			if(driver.hasUpdate()) {
 				
 				/* считываем очередной узел */
-				Node next = driver.getNextNodeItem();
+				ImportPackage<T> next = driver.getNextPackage();
 				
 				/* пока есть узлы, которые надо прочитать */
 				while(next != null) {
-					
-					/* извлекаем представление родительского узла */
-					// FIXME
-					Object parent = null;//next.selectParamInSafemode(next.getDefaultLocale(), DefaultNode.PARENT_VIEW);
-					
-					Node n = null;
-					
-					/* ищем его в сети */
-					if(parent != null) {
-						n = managedNetwork.select(SelectBuilder.Create(next.getDefaultLocale())
-								.appendParameter(DefaultNode.VIEW_OPTION, parent.toString()).build());
+					if(validatePackage(next)) {
+						
+						
+						
+						managedNetwork.insert(next.getView(), next.getResolver());
+						next = driver.getNextPackage();
 					}
-					
-					ModifyOptions mo = null;
-					
-					/* 
-					 * если родитель найден в сети, то новый узел будет вставлен
-					 * между родителем и его "детьми" с полным перемещением сылок.
-					 * если такого родителя нет в сети, то узел добавится к root.
-					 */
-					if(n != null) {
-						mo = ModifyOptions.CreatEasyInsertOptions(n);
-					} else {
-						mo = new ModifyOptions();
-						mo.setChildForNode(true);
-						mo.setKeyNode(managedNetwork.getRootNode());
-					}
-					
-					managedNetwork.insert(next, mo);
-					
-					next = driver.getNextNodeItem();
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Создает менеджер импорта данных для заданной сети
-	 * 
-	 * @param semNet - сеть, которая будет контролироваться
-	 * 										данным импортером
-	 * @return - экземпляр импортера
-	 */
-	public static ImportManager createFor(SemanticNetwork<? extends Node> semNet) {
-		if(semNet == null) {
-			throw new IllegalArgumentException("Не задана семаническая сеть");
-		}
-		return new ImportManager(semNet);
 	}
 	
 	@Override
 	protected void finalize() throws Throwable {
 		importPool.shutdownNow();
 		super.finalize();
+	}
+	
+	protected boolean validatePackage(ImportPackage<T> ip) {
+		if(ip.getView() != null && ip.getResolver() != null) {
+			return true;
+		}
+		return false;
+	}
+	
+	public int getCronTime() {
+		return cronTime;
+	}
+
+	public void setCronTime(int cronTime) {
+		if(cronTime <= 0) {
+			return;
+		}
+		this.cronTime = cronTime;
 	}
 }

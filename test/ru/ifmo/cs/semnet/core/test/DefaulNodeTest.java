@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import ru.ifmo.cs.semnet.core.TypeLink;
 import ru.ifmo.cs.semnet.core.impl.DefaultNode;
-import ru.ifmo.cs.semnet.core.impl.utils.SemNetUtils;
+import ru.ifmo.cs.semnet.core.impl.SemNetUtils;
 
 public class DefaulNodeTest {
 	

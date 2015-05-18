@@ -12,9 +12,9 @@ import org.junit.Test;
 import ru.ifmo.cs.semnet.core.Selector;
 import ru.ifmo.cs.semnet.core.TypeLink;
 import ru.ifmo.cs.semnet.core.impl.DefaultNode;
-import ru.ifmo.cs.semnet.core.impl.utils.ExtSelectBuilder;
-import ru.ifmo.cs.semnet.core.impl.utils.SelectBuilder;
-import ru.ifmo.cs.semnet.core.impl.utils.SemNetUtils;
+import ru.ifmo.cs.semnet.core.impl.SemNetUtils;
+import ru.ifmo.cs.semnet.core.select.ExtSelectBuilder;
+import ru.ifmo.cs.semnet.core.select.SelectBuilder;
 
 public class ExtSelectTest {
 

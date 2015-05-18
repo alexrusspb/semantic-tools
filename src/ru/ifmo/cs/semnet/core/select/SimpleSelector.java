@@ -1,4 +1,4 @@
-package ru.ifmo.cs.semnet.core.impl.utils;
+package ru.ifmo.cs.semnet.core.select;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import ru.ifmo.cs.semnet.core.Comparator;
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.Selector;
 import ru.ifmo.cs.semnet.core.TypeLink;
-import ru.ifmo.cs.semnet.core.exeption.LangNotSupportedException;
+import ru.ifmo.cs.semnet.core.exception.LangNotSupportedException;
+import ru.ifmo.cs.semnet.core.impl.SemNetUtils;
 
 /**
  * Простой объект выборки. Содержит критерии поиска и позволяет 
@@ -62,28 +64,17 @@ public class SimpleSelector implements Selector {
 	/* какой локалью ограничить просмотр параметров (либо брать все параметры) */
 	private Locale loc;
 	
+	/* объект проверки строковых параметров */
+	private Comparator comparator;
+	
 	@Override
 	public <T extends Node> boolean checkNode(T node) {
-		try {
-			Map<String, List<Object>> arg = null;
-			if(loc == null) {
-				arg = node.getAllParameters();
-			} else {
-				// конвертируем Map<String, Object> в Map<String, List<Object>>
-				arg = new HashMap<>();
-				Map<String, Object> map = node.getAllLocalizedParameters(loc);
-				for(String s : map.keySet()) {
-					List<Object> value = new ArrayList<>();
-					value.add(map.get(s));
-					arg.put(s, value);
-				}
-			}
-			return checkIds(node.getId()) && checkLinks(node.getLinks()) 
-				&& checkParams(arg);
-		} catch (LangNotSupportedException e) {
-			// если задана локаль, которую узел не поддерживает
+		Map<String, List<Object>> arg = SemNetUtils.convertParameters(loc, node);
+		if(arg == null) {
 			return false;
 		}
+		return checkIds(node.getId()) && checkLinks(node.getLinks()) 
+			&& checkParams(arg);
 	}
 
 	/**
@@ -162,7 +153,7 @@ public class SimpleSelector implements Selector {
 			if(nodeParams.containsKey(key)) {
 				// если среди значений по данному ключу 
 				// есть такое как в наборе ограничителей
-				if(nodeParams.get(key).contains(protectByParams.get(key))) {
+				if(comparator.compare(nodeParams.get(key), protectByParams.get(key))) {
 					// то переходим к следующему параметру
 					continue;
 				}
@@ -189,5 +180,10 @@ public class SimpleSelector implements Selector {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public void setComparator(Comparator comparator) {
+		this.comparator = comparator;
 	}
 }

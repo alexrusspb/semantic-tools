@@ -2,19 +2,28 @@ package ru.ifmo.cs.semnet.core;
 
 import java.util.Map;
 
+/**
+ * Экземпляры наследников данного типа занимаются  разрешением
+ * конфликнтых  ситуаций с сылками  при модификации  сети. Так, 
+ * при удалении узла или при вставке нового сеть самостоятельно 
+ * не в состоянии определить что делать с их дочерними ссылками
+ * или к какому родительскому узлу прикрепить новый вставляемый 
+ * узел, не нарушив смысловой  структуры  понятий и определений.
+ * 
+ * @author Pismak Alexey
+ * @lastUpdate 18 мая 2015 г.
+ * @param <T> тип разрешаемых ссылок
+ */
 @FunctionalInterface
-public interface LinkResolver {
-	
-	/**
-	 * Метод, разрешающий конфликты ссылок пр модификации сети.
-	 * К такого рода операциям относится удаление узлов и вставка
-	 * узлов. 
-	 * 
-	 * @param modifySource
-	 * @param storage
-	 * @param semNet
-	 * @return 
-	 */
-	<T extends Node> T resolve(Node modifySource, Map<Long, T> storage, SemanticNetwork<T> semNet);
-	
+public interface LinkResolver<T extends Node> {
+
+    /**
+     * Метод, разрешающий конфликты ссылок пр модификации сети. К такого рода
+     * операциям относится удаление узлов и вставка узлов.
+     * 
+     * @param modifySource модифицирующий узел (либо удаляемый, либо внедряемый)
+     * @param storage хранилище данных сети
+     */
+    void resolve(T modifySource, Map<Long, ? extends T> storage);
+
 }

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import ru.ifmo.cs.semnet.core.exeption.LangNotSupportedException;
+import ru.ifmo.cs.semnet.core.exception.LangNotSupportedException;
 
 /**
  * Описание поведения и функциональности узлов семантической сети.

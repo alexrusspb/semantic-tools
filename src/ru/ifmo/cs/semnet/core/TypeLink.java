@@ -38,7 +38,7 @@ public enum TypeLink {
 	ACTION_LINK,
 	
 	/**
-	 * Ссылка на дополнение (уточнение)
+	 * Ссылка на понятие-дополнение (уточнение)
 	 */
 	ADDITIONAL_LINK,
 	
@@ -50,5 +50,4 @@ public enum TypeLink {
 	 * на ЯВЛЕНИЕ.
 	 */
 	FRENDLY_LINK;
-	
 }

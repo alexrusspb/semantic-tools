@@ -2,7 +2,7 @@ package ru.ifmo.cs.semnet.examples;
 
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.impl.SemNet;
-import ru.ifmo.cs.semnet.core.impl.utils.SemNetUtils;
+import ru.ifmo.cs.semnet.core.impl.SemNetUtils;
 import ru.ifmo.cs.semnet.importer.ImportManager;
 import ru.ifmo.cs.semnet.importer.impl.TextStreamImportDriver;
 

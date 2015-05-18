@@ -1,4 +1,4 @@
-package ru.ifmo.cs.semnet.core.impl.utils;
+package ru.ifmo.cs.semnet.core.select;
 
 import java.util.Locale;
 
@@ -35,6 +35,7 @@ public class SelectBuilder {
 	
 	protected SelectBuilder() {
 		selector = new SimpleSelector();
+		selector.setComparator(new SelectComparator());
 	}
 	
 	/**

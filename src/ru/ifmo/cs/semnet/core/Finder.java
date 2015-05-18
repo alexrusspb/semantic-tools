@@ -1,7 +1,10 @@
 package ru.ifmo.cs.semnet.core;
 
-public interface Finder extends Selector {
-	
-	void changeFindAlgorithm(FindAlgorithm fa);
-	
-}
+/**
+ * Интерфейс-маркер. Используется в операциях поиска по сети.
+ * Для работы задействует алгоритмы неточного поиска.
+ * 
+ * @author Pismak Alexey
+ * @lastUpdate 18 мая 2015 г.
+ */
+public interface Finder extends Selector { }
