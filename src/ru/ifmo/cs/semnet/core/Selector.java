@@ -1,55 +1,33 @@
 package ru.ifmo.cs.semnet.core;
 
-import java.util.HashMap;
-import java.util.Locale;
-
 /**
- * Класс, содержащий информацию, которой пользуемся 
- * при выборке узлов из сети. По этим параметрам и 
- * определям, подходит ли узел критериям поиска.
+ * Селекторы используются для  формирования и  хранения критериев
+ * выборки  узлов из  семантической  сети.  Основной их  функцией 
+ * является проверка переданного им узла на соответствие хранимым
+ * критериям. О дополнительных возможностях {@link=ExtendedSelector}
  * 
- * FIXME добавить "крутых параметров" для продвинутого
- * поиска по параметрам в глубину поддеревьев
- * 
- * @author alex
- *
+ * @author Pismak Alexey
+ * @lastUpdate 18 мая 2015 г.
  */
-public class Selector {
+public interface Selector {
 
-	private Locale locale;
+	/**
+	 * Метод проверки указанного узла на ссответствие критериям
+	 * 
+	 * @param node проверяемый узел
+	 * @return <code>true</code> если узел соответствует
+	 * 					критериям, иначе <code>false</code>
+	 */
+	<T extends Node> boolean checkNode(T node);
 	
-	private HashMap<String, Object> selectParams;
-
-	public Selector() {
-		this(null);
-	}
+	/**
+	 * Метод задания компаратора,  который  используется при  сравнении
+	 * объектов-параметров узла сети. Реализации компараторов позволяют
+	 * сменять  алгоритмы  выборки,   например  на  регистронезависимое
+	 * сравнение  текстовых  объектов  или  иные  возможности.
+	 * 
+	 * @param comparator
+	 */
+	void setComparator(Comparator comparator);
 	
-	public Selector(Locale loc) {
-		if(loc == null) {
-			locale = Options.getInstance().getDefaultLocale();
-		} else {
-			locale = loc;
-		}
-		selectParams = new HashMap<>();
-	}
-	
-	public HashMap<String, Object> getSelectParams() {
-		return selectParams;
-	}
-
-	public void setSelectParams(HashMap<String, Object> selectParams) {
-		this.selectParams = selectParams;
-	}
-
-	public Locale getLocale() {
-		return locale;
-	}
-
-	public void setLocale(Locale locale) {
-		this.locale = locale;
-	}
-	
-	public Object addSelectParam(String nameParam, Object valueParam) {
-		return getSelectParams().put(nameParam, valueParam);
-	}
 }
