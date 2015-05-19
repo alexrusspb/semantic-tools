@@ -1,5 +1,6 @@
 package ru.ifmo.cs.semnet.importer.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +21,8 @@ import ru.ifmo.cs.semnet.importer.ImportPackage;
  * @author alex
  *
  */
-public class ImportManagerImpl<T extends ImportPackage, R extends Node> implements ImportManager<T, R>{
+public class ImportManagerImpl<T extends ImportPackage, R extends Node> 
+							implements ImportManager<T, R> {
 
 	/* Зарегестрированные драйверы импорта */
 	private ArrayList<ImportDriver<T>> regDrivers;
@@ -28,7 +30,7 @@ public class ImportManagerImpl<T extends ImportPackage, R extends Node> implemen
 	/* Управляемая семантическая сеть */
 	private SemanticNetwork<R> managedNetwork;
 	
-	/* пул */
+	/* пул импорта */
 	private ExecutorService importPool = null;
 	
 	private int cronTime = 10;
@@ -136,12 +138,6 @@ public class ImportManagerImpl<T extends ImportPackage, R extends Node> implemen
 		}
 	}
 	
-	@Override
-	protected void finalize() throws Throwable {
-		importPool.shutdownNow();
-		super.finalize();
-	}
-	
 	protected boolean validatePackage(ImportPackage ip) {
 		if(ip.getView() != null && ip.getParentView() != null) {
 			return true;
@@ -158,5 +154,10 @@ public class ImportManagerImpl<T extends ImportPackage, R extends Node> implemen
 			return;
 		}
 		this.cronTime = cronTime;
+	}
+
+	@Override
+	public void close() throws IOException {
+		importPool.shutdownNow();
 	}
 }

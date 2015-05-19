@@ -15,7 +15,9 @@ import ru.ifmo.cs.semnet.core.select.SelectBuilder;
  * @author Pismak Alexey
  * @lastUpdate 19 мая 2015 г.
  */
-public class Resolvers {
+public final class Resolvers {
+	
+	private Resolvers() { }
 	
 	/**
 	 * Создает экземпляр резолвера, который решает конфликты 
@@ -30,7 +32,7 @@ public class Resolvers {
 				createAsNewParentResolver(SemanticNetwork<T> semNet, String parentView) {
 		List<T> list = semNet.select(SelectBuilder.select()
 				.param(SemNetUtils.VIEW_NAME_PARAMETER, parentView).build());
-		if(list != null && list.size() > 0) {
+		if(list != null && !list.isEmpty()) {
 			return new InsertAsNewParentResolver<>(list.get(0).getId());
 		}
 		return null;
@@ -49,7 +51,7 @@ public class Resolvers {
 				createChildInsertResolver(SemanticNetwork<T> semNet, String parentView) {
 		List<T> list = semNet.select(SelectBuilder.select()
 				.param(SemNetUtils.VIEW_NAME_PARAMETER, parentView).build());
-		if(list != null && list.size() > 0) {
+		if(list != null && !list.isEmpty()) {
 			return new InsertChildLinkResolver<>(list.get(0).getId());
 		}
 		return null;
@@ -71,11 +73,13 @@ public class Resolvers {
 		// при необходимости оптимизировать, выбрав родительский идочерний узлы одним select'ом
 		List<T> list = semNet.select(SelectBuilder.select()
 				.param(SemNetUtils.VIEW_NAME_PARAMETER, parentView).build());
-		if(list != null && list.size() > 0) {
+		
+		if(list != null && !list.isEmpty()) {
 			T parent = list.get(0);
 			list = semNet.select(SelectBuilder.select()
 					.param(SemNetUtils.VIEW_NAME_PARAMETER, childView).build());
-			if(list != null && list.size() > 0) {
+			
+			if(list != null && !list.isEmpty()) {
 				T child = list.get(0);
 				return new InsertBetweenLinkResolver<>(parent.getId(), child.getId());
 			}
@@ -98,14 +102,14 @@ public class Resolvers {
 						String ...child) {
 		List<T> list = sn.select(SelectBuilder.select()
 				.param(SemNetUtils.VIEW_NAME_PARAMETER, parentView).build());
-		if(list != null && list.size() > 0) {
+		if(list != null && !list.isEmpty()) {
 			T parent = list.get(0);
 			list.clear();
 			if(child != null && child.length > 0) {
 				for(String s : child) {
 					List<T> ch = sn.select(SelectBuilder.select()
 							.param(SemNetUtils.VIEW_NAME_PARAMETER, s).build());
-					if(ch != null && ch.size() > 0) {
+					if(ch != null && !ch.isEmpty()) {
 						list.add(ch.get(0));
 					}
 				}
@@ -132,7 +136,7 @@ public class Resolvers {
 	public static <T extends Node> InsertChildLinkResolver<T> 
 				createChildInsertResolver(SemanticNetwork<T> semNet, Selector selectParent) {
 		List<T> list = semNet.select(selectParent);
-		if(list != null && list.size() > 0) {
+		if(list != null && !list.isEmpty()) {
 			return new InsertChildLinkResolver<>(list.get(0).getId());
 		}
 		return null;

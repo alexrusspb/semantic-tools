@@ -31,6 +31,8 @@ public class CreateAndUsingSemNetExample {
 			// пока юзер не нажмет EXIT
 		}
 		
+		
+		
 		System.out.println("Размер сети: " + semanticNetwork.sizeNetwork());
 		System.out.println("Корневой узел имеет формат: \n" + semanticNetwork.getRootNode().toVerboseString());
 	}

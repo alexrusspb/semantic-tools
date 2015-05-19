@@ -74,7 +74,7 @@ public class SemNetUtils {
 	 * @return <code>true</code> если слово найдено, иначе <code>false</code>
 	 */
 	public static boolean containsWithIgnoreCase(Set<String> set, String key) {
-		return set.stream().filter(s -> s.equalsIgnoreCase(key))
-				.collect(Collectors.toList()).size() > 0;
+		return !set.stream().filter(s -> s.equalsIgnoreCase(key))
+				.collect(Collectors.toList()).isEmpty();
 	}
 }

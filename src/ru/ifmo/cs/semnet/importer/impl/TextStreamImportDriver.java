@@ -150,7 +150,7 @@ public class TextStreamImportDriver<T extends ImportPackage> implements ImportDr
 			}
 			
 			/* если заданы доп. параметры, то сохраняем и их */
-			if(argsList.size() > 0) {
+			if(!argsList.isEmpty()) {
 				for(String param : argsList) {
 					String[] opts = param.split("=");
 					if(opts.length != 2) {
@@ -170,7 +170,7 @@ public class TextStreamImportDriver<T extends ImportPackage> implements ImportDr
 	
 	@Override
 	public boolean hasUpdate() {
-		return updates.size() > 0;
+		return !updates.isEmpty();
 	}
 
 	@Override

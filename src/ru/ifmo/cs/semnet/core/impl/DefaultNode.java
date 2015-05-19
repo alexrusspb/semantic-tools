@@ -90,7 +90,7 @@ public class DefaultNode implements Node {
 		} catch (LangNotSupportedException ex) {
 			List<Object> views = params.values().stream()
 					.map(k -> k.get(SemNetUtils.VIEW_NAME_PARAMETER)).collect(Collectors.toList());
-			if(views != null && views.size() > 0) {
+			if(views != null && !views.isEmpty()) {
 				result = views.get(0).toString();
 			} else {
 				throw new MutatedNodeException(this, "View parameter was deleted");
@@ -181,11 +181,9 @@ public class DefaultNode implements Node {
 		}
 		// получаем id всех удаляемых нод
 		List<Long> removedNodes = getLinks(type).stream().map(n -> n.getId()).collect(Collectors.toList());
-		if(removedNodes.size() > 0) {
+		if(!removedNodes.isEmpty()) {
 			// очищаем ссылки
-			removedNodes.forEach(l -> {
-				links.remove(l);
-			});
+			removedNodes.forEach(l ->  links.remove(l));
 			return true;
 		}
 		return false;
@@ -207,9 +205,7 @@ public class DefaultNode implements Node {
 		links.clear();
 		links = null;
 		// очистка рараметров для локалей
-		params.values().forEach(map -> {
-			map.clear();
-		});
+		params.values().forEach(map -> map.clear());
 		// очистка самих локалей
 		params.clear();
 		params = null;
@@ -257,7 +253,7 @@ public class DefaultNode implements Node {
 			// целостность данных
 			throw new MutatedNodeException(this, "Node has more one parent link");
 		}
-		return parents.size() > 0 ? parents.get(0) : null;
+		return !parents.isEmpty() ? parents.get(0) : null;
 	}
 
 	@Override
@@ -341,7 +337,7 @@ public class DefaultNode implements Node {
 			List<Object> list = map.keySet().stream().filter(n -> n.equals(name))
 					.map(s -> map.get(s)).collect(Collectors.toList());
 			/* если хоть оди найден, то возвращаем его */
-			if(list != null && list.size() > 0) {
+			if(list != null && !list.isEmpty()) {
 				return list.get(0);
 			}
 		}

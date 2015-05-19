@@ -92,7 +92,7 @@ public class SemNet implements SemanticNetwork<DefaultNode> {
             LinkResolver<? super DefaultNode> resolver) {
 		// находим то, что собираемся удалить
         List<DefaultNode> removedNodes = select(selector);
-        if (removedNodes.size() > 0) {
+        if (!removedNodes.isEmpty()) {
             for (DefaultNode n : removedNodes) {
             	// для каждого удаляемого узла резолвим ссылки
                 resolver.resolve(n, storage);

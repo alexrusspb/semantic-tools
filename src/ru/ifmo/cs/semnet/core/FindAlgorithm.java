@@ -29,7 +29,7 @@ public enum FindAlgorithm implements Comparator {
 	 * @return <code>true</code> если строки 
 	 * 			прошли проверку, иначе <code>false</code>
 	 */
-	public boolean compare(String checkedWord, String pattern) {
+	private boolean compareByAlgorithm(String checkedWord, String pattern) {
 		if(this.equals(NGRAMM)) {
 			return nGrammComparator(checkedWord, pattern);
 		}
@@ -83,7 +83,7 @@ public enum FindAlgorithm implements Comparator {
 	public boolean compare(List<Object> network, Object selectorKey) {
 		try {
 			for(Object o : network) {
-				if(  compare(  ((String)o), ((String)selectorKey)  )  ) {
+				if(  compareByAlgorithm(  ((String)o), ((String)selectorKey)  )  ) {
 					return true;
 				}
 			}
