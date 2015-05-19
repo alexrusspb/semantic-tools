@@ -49,8 +49,8 @@ public class SelectBuilder {
 	 * Добавляет перечень идентификаторов, которые должны иметь
 	 * (один из указанных) проверяемые селектором узлы
 	 * 
-	 * @param ids
-	 * @return
+	 * @param ids допустимые идентификаторы
+	 * @return {@link SelectBuilder}
 	 */
 	public SelectBuilder id(long ...ids) {
 		if(ids != null && ids.length > 0) {
@@ -61,6 +61,13 @@ public class SelectBuilder {
 		return this;
 	}
 	
+	/**
+	 * Добавление ограничения на наличие ссылки
+	 * 
+	 * @param id на что должен ссылаться узел
+	 * @param type каков тип связи должен быть
+	 * @return {@link SelectBuilder}
+	 */
 	public SelectBuilder link(long id, TypeLink type) {
 		if(type != null) {
 			selector.addLink(id, type);
@@ -68,6 +75,13 @@ public class SelectBuilder {
 		return this;
 	}
 	
+	/**
+	 * Добавление ограничений по параметрам
+	 * 
+	 * @param name имя параметра
+	 * @param value значение параметра
+	 * @return {@link SelectBuilder}
+	 */
 	public SelectBuilder param(String name, Object value) {
 		if(name != null && value != null) {
 			selector.addParam(name, value);
@@ -75,6 +89,12 @@ public class SelectBuilder {
 		return this;
 	}
 	
+	/**
+	 * Ограничение параметров по локали
+	 * 
+	 * @param locale в какой локали сканировать параметры
+	 * @return {@link SelectBuilder}
+	 */
 	public SelectBuilder by(Locale locale) {
 		if(locale != null) {
 			selector.changeLocaleProtect(locale);
@@ -82,6 +102,9 @@ public class SelectBuilder {
 		return this;
 	}
 	
+	/**
+	 * @return сформированный экземпляр {@link Selector}
+	 */
 	public Selector build() {
 		return selector;
 	}

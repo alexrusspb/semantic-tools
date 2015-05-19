@@ -11,25 +11,47 @@ import ru.ifmo.cs.semnet.core.Finder;
 import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.impl.SemNetUtils;
 
+/**
+ * Объект простого неточного поиска по семантической сети
+ * 
+ * @author Pismak Alexey
+ * @lastUpdate 18 мая 2015 г.
+ */
 public class SimpleFinder implements Finder {
 	
+	/* "поисковик" ищет только среди текстовых параметров */
 	private Map<String, String> parameters;
 	
 	private Comparator comparator;
 	
 	private Locale locale;
 	
+	/**
+	 * Инициализация компаратора "поисковика" реализацией
+	 * с алгоритмом сравнения N-Gramm
+	 */
 	public SimpleFinder() {
 		setComparator(FindAlgorithm.NGRAMM);
 	}
 	
+	/**
+	 * Добавление параметра поиска
+	 * 
+	 * @param name название параметра
+	 * @param value значение параметра
+	 */
 	public void addParam(String name, String value) {
-		if(parameters == null) {
-			parameters = new HashMap<>();
+		if(name != null && value != null) {
+			if(parameters == null) {
+				parameters = new HashMap<>();
+			}
+			parameters.put(name.toUpperCase(), value);
 		}
-		parameters.put(name.toUpperCase(), value);
 	}
 	
+	/**
+	 * @param locale по какой локали ограничить поиск в параметрах узлов
+	 */
 	public void setFindLocale(Locale locale) {
 		this.locale = locale;
 	}

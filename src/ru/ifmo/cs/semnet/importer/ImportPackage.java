@@ -1,73 +1,73 @@
 package ru.ifmo.cs.semnet.importer;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import ru.ifmo.cs.semnet.core.Node;
 import ru.ifmo.cs.semnet.core.TypeLink;
 
-public class ImportPackage<T extends Node> {
-
-	private Map<String, Object> inputParameters;
+/**
+ * Описание пакета получаемых данных
+ * 
+ * @author Pismak Alexey
+ * @lastUpdate 19 мая 2015 г.
+ */
+public interface ImportPackage {
 	
-	private String view;
-
-	private Locale locale;
+	/**
+	 * @return представление узла
+	 */
+	String getView();
 	
-	private Map<String, TypeLink> linkCandidates;
+	/**
+	 * @param view представление узла
+	 */
+	void setView(String view);
 	
-	private String parentView;
+	/**
+	 * @return представление узла, который 
+	 * 		нужно назначить родительским
+	 */
+	String getParentView();
 	
-	public ImportPackage() {
-		inputParameters = new HashMap<>();
-	}
+	/**
+	 * @param pView представление родительского узла
+	 */
+	void setParentView(String pView);
 	
-	public Map<String, Object> getInputParameters() {
-		return inputParameters;
-	}
-
-	public void setInputParameters(Map<String, Object> inputParameters) {
-		this.inputParameters = inputParameters;
-	}
-
-	public String getView() {
-		return view;
-	}
-
-	public void setView(String view) {
-		this.view = view;
-	}
-
-	public Locale getLocale() {
-		return locale;
-	}
-
-	public void setLocale(Locale locale) {
-		this.locale = locale;
-	}
-
-	public Map<String, TypeLink> getLinkCandidates() {
-		return linkCandidates;
-	}
-
-	public void setLinkCandidates(Map<String, TypeLink> links) {
-		linkCandidates = links;
-	}
-
-	public void addParameter(String s, Object value) {
-		inputParameters.put(s, value);
-	}
+	/**
+	 * @return параметры инициализации узла
+	 */
+	Map<String, Object> getInitParameters();
 	
-	public void addLinkCandidate(String viewLinkageNode, TypeLink link) {
-		linkCandidates.put(viewLinkageNode, link);
-	}
-
-	public String getParentView() {
-		return parentView;
-	}
-
-	public void setParentView(String parentView) {
-		this.parentView = parentView;
-	}
+	/**
+	 * Добавление параметра инициализации
+	 * 
+	 * @param name имя параметра
+	 * @param value значение параметра
+	 */
+	void addInitParameter(String name, Object value);
+	
+	/**
+	 * @return набор представлений, которые могут быть 
+	 * 		связаны с новым узлом, если будут найдены в сети
+	 */
+	Map<String, TypeLink> getLinkCandidates();
+	
+	/**
+	 * Добавление кандидата в набор связей нового узла
+	 * 
+	 * @param viewCandidate представление кандидита
+	 * @param linkage тип необходимой связи
+	 */
+	void addLinkCandidate(String viewCandidate, TypeLink linkage);
+	
+	/**
+	 * @return локаль для которой задано представление узла
+	 */
+	Locale getLocaleForView();
+	
+	/**
+	 * @param locale завадаемая локаль
+	 */
+	void setLocaleForView(Locale locale);
 }

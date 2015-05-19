@@ -16,8 +16,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import ru.ifmo.cs.semnet.core.Node;
-import ru.ifmo.cs.semnet.core.resolve.Resolvers;
 import ru.ifmo.cs.semnet.importer.ImportDriver;
 import ru.ifmo.cs.semnet.importer.ImportListener;
 import ru.ifmo.cs.semnet.importer.ImportPackage;
@@ -25,15 +23,17 @@ import ru.ifmo.cs.semnet.importer.ImportPackage;
 /**
  * Реализация простейшего потокового драйвера импорта.
  * Драйвер осуществляет чтение входной строки из заданного
- * потока ввода, согласно формату, указанному в @link=helpString()
+ * потока ввода, согласно формату, указанному в helpString();
  * 
  * Завершается работа драйвера подачей строки EXIT на входной
  * поток текстовых данных.
  * 
+ * FIXME добавить нормальный ридер и конвертацию processImport
+ * 
  * @author alex
  *
  */
-public class TextStreamImportDriver<T extends Node> implements ImportDriver<T> {
+public class TextStreamImportDriver<T extends ImportPackage> implements ImportDriver<T> {
 
 	private static final long serialVersionUID = -2059568814402703495L;
 
@@ -44,7 +44,7 @@ public class TextStreamImportDriver<T extends Node> implements ImportDriver<T> {
 	private static final String LOCALE_KEY = "-L";
 	
 	/* считанные ноды */
-	private ConcurrentLinkedQueue<ImportPackage<T>> updates = new ConcurrentLinkedQueue<>();
+	private ConcurrentLinkedQueue<T> updates = new ConcurrentLinkedQueue<>();
 	
 	private Scanner scanner = null;
 	
@@ -117,6 +117,7 @@ public class TextStreamImportDriver<T extends Node> implements ImportDriver<T> {
 	 * узла сети, на основе заданных параметров
 	 * @param args
 	 */
+	@SuppressWarnings({ "unchecked", "unused" })
 	protected void processImport(String[] args) {
 		if(args[0].equals(IMPORT_KEYWORD)) {
 			
@@ -159,11 +160,11 @@ public class TextStreamImportDriver<T extends Node> implements ImportDriver<T> {
 				}
 			}
 			
-			ImportPackage<T> pack = new ImportPackage<>();
+			ImportPackage pack = new ImportPackageImpl();
 			pack.setView(view);
 			pack.setParentView(parent);
 			
-			updates.add(pack);
+			updates.add((T) pack);
 		}
 	}
 	
@@ -200,16 +201,20 @@ public class TextStreamImportDriver<T extends Node> implements ImportDriver<T> {
 		return "usage: IMPORT VIEW_OF_NEW_NODE [FOR VIEW_OF_PARENT_NODE] \n"
 				+ "		[OPT_NAME=OPT_VALUE ...] [-L locale_code]\n";
 	}
+	
+	@Override
+	public String toString() {
+		return helpString();
+	}
 
 	@Override
-	public ImportPackage<T> getNextPackage() {
+	public T getNextPackage() {
 		return updates.poll();
 	}
 
 	@Override
 	public void subscribeOnImportEvent(ImportListener listener) {
-		// TODO Auto-generated method stub
-		
+		// TODO
 	}
 	
 }

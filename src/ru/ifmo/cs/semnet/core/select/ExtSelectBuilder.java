@@ -39,16 +39,20 @@ public class ExtSelectBuilder extends SelectBuilder {
 		selector = new ExtendedSelector();
 	}
 	
+	/**
+	 * @return новый экземпляр ExtSelectBuilder
+	 */
 	public static ExtSelectBuilder select() {
 		return new ExtSelectBuilder();
 	}
 	
 	/**
+	 * Добавление расширенного критерия для внешних узлов
 	 * 
-	 * 
-	 * @param type
-	 * @param selector
-	 * @return
+	 * @param type тип связи узлов, на которые будут накладываться 
+	 * 					расширенные критерии
+	 * @param selector объект критериев выбоки
+	 * @return текущий экземпляр {@link ExtSelectBuilder}
 	 */
 	public ExtSelectBuilder ext(TypeLink type, Selector selector) {
 		((ExtendedSelector)this.selector).addlinkageParameter(type, selector);

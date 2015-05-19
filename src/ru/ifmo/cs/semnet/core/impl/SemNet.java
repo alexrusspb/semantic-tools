@@ -25,7 +25,7 @@ import ru.ifmo.cs.semnet.core.SemanticNetwork;
 import ru.ifmo.cs.semnet.core.exception.FailInitSemanticNetworkException;
 
 /**
- * Реализация семантической сети на узлах по умолчанию
+ * Реализация семантической сети на узлах по умолчанию.
  * 
  * @author Pismak Alexey
  * @lastUpdate 18 мая 2015 г.
@@ -35,7 +35,10 @@ public class SemNet implements SemanticNetwork<DefaultNode> {
 	/* Физическая структура данных семантической сети */
 	private Map<Long, DefaultNode> storage = null;
 	
-	/* присваеваемый ид новым узлам (инкрементальный) */
+	/*
+	 *  присваеваемый ид новым узлам (инкрементальный)
+	 *  при чтении сети из фала - восстанавливается
+	 */
 	private static long nextId = 1;
 	
 	/**
@@ -87,23 +90,21 @@ public class SemNet implements SemanticNetwork<DefaultNode> {
 	@Override
     public boolean remove(Selector selector,
             LinkResolver<? super DefaultNode> resolver) {
+		// находим то, что собираемся удалить
         List<DefaultNode> removedNodes = select(selector);
         if (removedNodes.size() > 0) {
             for (DefaultNode n : removedNodes) {
+            	// для каждого удаляемого узла резолвим ссылки
                 resolver.resolve(n, storage);
+                // освобождение ресурсов занимаемых узлом
                 n.onRemoveNode();
+                // удаление из физической структуры
                 storage.remove(n);
             }
             return true;
         }
         return false;
     }
-	
-	public void DEBUG() {
-		for(DefaultNode dn : storage.values()) {
-			System.out.println(dn.toVerboseString());
-		}
-	}
 
     @Override
     public DefaultNode insert(String view, 
@@ -137,7 +138,7 @@ public class SemNet implements SemanticNetwork<DefaultNode> {
 			output.flush();
 			output.close();
 		} catch(IOException exept) {
-			System.out.println("печаль при сохранении параметров");
+			System.out.println("Неудача при сохранении параметров");
 			exept.printStackTrace();
 		}
 	}
@@ -164,5 +165,4 @@ public class SemNet implements SemanticNetwork<DefaultNode> {
 	public long sizeNetwork() {
 		return storage.size();
 	}
-
 }

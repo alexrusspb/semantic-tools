@@ -94,7 +94,7 @@ public class SemanticNetTest {
 		semNet.insert("Крупица", SemNetUtils.RUSSIA, new InsertChildLinkResolver<DefaultNode>(0));
 		semNet.insert("Кроха", SemNetUtils.RUSSIA, new InsertAsNewParentResolver<DefaultNode>(0));
 		
-		Node n = semNet.insert("Пылинка", new InsertWithMoveChildResolver<>(3, 1));
+		Node n = semNet.insert("Пылинка", new InsertWithMoveChildResolver<DefaultNode>(3, 1L));
 		System.out.println(n.toVerboseString());
 	}
 

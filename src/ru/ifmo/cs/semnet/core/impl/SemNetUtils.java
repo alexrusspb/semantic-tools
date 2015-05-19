@@ -33,6 +33,18 @@ public class SemNetUtils {
 	
 	
 	/* UTILS */
+	
+	/**
+	 * Формирование "правильного"  набора параметров узла.
+	 * Т.к. каждый узел можеть иметь несколько одинаковых 
+	 * параметров, то при слиянии их в один набор, дубликат
+	 * на сохраняется. Этом метот формирует набор, где 
+	 * каждому параметру назначается список его значений
+	 * 
+	 * @param l для какой локали использовать параметры (может быть null)
+	 * @param n для какого узла получить этот список
+	 * @return набор параметров
+	 */
 	public static Map<String, List<Object>> convertParameters(Locale l, Node n) {
 		try {
 			Map<String, List<Object>> arg = null;
@@ -54,6 +66,13 @@ public class SemNetUtils {
 		}
 	}
 	
+	/**
+	 * Проверка на набора строк на содержание в нем строки без учета регистра
+	 * 
+	 * @param set проверяемый набор
+	 * @param key какое слово искать в наборе
+	 * @return <code>true</code> если слово найдено, иначе <code>false</code>
+	 */
 	public static boolean containsWithIgnoreCase(Set<String> set, String key) {
 		return set.stream().filter(s -> s.equalsIgnoreCase(key))
 				.collect(Collectors.toList()).size() > 0;

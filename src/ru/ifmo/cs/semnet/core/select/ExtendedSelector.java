@@ -23,8 +23,8 @@ import ru.ifmo.cs.semnet.core.TypeLink;
  * запроса расширенного объекта для такого запроса примет вид:
  * 
  * SELECT WITH ( PARAM ("area" -> "Кухня") ) 
- * 			EXT (CHILD, WITH ( PARAM ( "area" -> "кулинария" ) )
- * 			EXT (SYNONYM, WIDTH ( PARAM ( "display" -> "Горячее блюдо" ) ) );
+ * 	 EXT (CHILD, WITH ( PARAM ( "area" -> "кулинария" ) )
+ * 	 EXT (SYNONYM, WIDTH ( PARAM ( "display" -> "Горячее блюдо" ) ) );
  * 
  * Как видно из примера, расширение селектора добавляет новую
  * функцию EXT, которая принимает тип ссылки, которая должна 
@@ -67,6 +67,12 @@ public class ExtendedSelector extends SimpleSelector {
 		return super.checkNode(node) && extendedCheck(node);
 	}
 	
+	/**
+	 * Добавление ограничения для узлов заданного типа
+	 * 
+	 * @param type тип узлов для которых вносим дополнительные критерии
+	 * @param selector объект критериев проверки узла
+	 */
 	public void addlinkageParameter(TypeLink type, Selector selector) {
 		if(selector != null) {
 			if(externalProtects == null) {
@@ -78,16 +84,25 @@ public class ExtendedSelector extends SimpleSelector {
 		}
 	}
 	
+	/**
+	 * Проверка узла на соответствие расширенным критериям
+	 * 
+	 * @param node проверяемый узел
+	 * @return <code>true</code> если соответствует,
+	 * 				иначе <code>false</code>
+	 */
 	protected boolean extendedCheck(Node node) {
 		if(externalProtects == null) {
 			return true;
 		}
 		for(Entry<TypeLink, Selector> e : externalProtects.entrySet()) {
+			// получаем все узлы со ссылками заданного типа
 			List<Node> links = node.getLinks(e.getKey());
 			if(links == null || links.isEmpty()) {
 				return false;
 			}
 			boolean subResult = false;
+			// каждый узел проверяем на соответствие критериям 
 			for(Node lNode : links) {
 				if(e.getValue().checkNode(lNode)) {
 					subResult = true;
@@ -100,5 +115,4 @@ public class ExtendedSelector extends SimpleSelector {
 		}
 		return true;
 	}
-	
 }

@@ -30,7 +30,7 @@ public class DefaultNode implements Node {
 	 */
 	
 	/* ссылка на объект, где хранятся ВСЕ остальные узлы текущей сем. сети */
-	private Map<Long, ? extends Node> storage;
+	private transient Map<Long, ? extends Node> storage;
 	
 	/* Набор связей узла */
 	private Map<Long, TypeLink> links;

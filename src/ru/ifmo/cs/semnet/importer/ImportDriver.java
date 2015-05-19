@@ -3,8 +3,6 @@ package ru.ifmo.cs.semnet.importer;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
-import ru.ifmo.cs.semnet.core.Node;
-
 /**
  * Описатель поведения импортера
  * 
@@ -12,7 +10,7 @@ import ru.ifmo.cs.semnet.core.Node;
  * @lastUpdate 18 мая 2015 г.
  * @param <T> - тип поставляемых узлов
  */
-public interface ImportDriver<T extends Node> extends Serializable {
+public interface ImportDriver<T extends ImportPackage> extends Serializable {
 	
 	/**
 	 * Сканирование на наличие обновлений
@@ -26,17 +24,18 @@ public interface ImportDriver<T extends Node> extends Serializable {
 	 * быть будет включен в сеть, если его параметры валидны
 	 * @return
 	 */
-	ImportPackage<T> getNextPackage();
+	T getNextPackage();
 	
 	/**
+	 * Подписка на обработку обновлений по событию
 	 * 
-	 * @param listener
+	 * @param listener слушатель события обновления
 	 */
 	void subscribeOnImportEvent(ImportListener listener);
 	
 	/**
-	 * 
-	 * @return
+	 * @return возвращает все доступные обновления в
+	 * 		виде потока пакетов обновления
 	 */
 	ObjectInputStream getPackagesStream();
 }
