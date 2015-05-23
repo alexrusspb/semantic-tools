@@ -30,7 +30,7 @@ public class DefaultNode implements Node {
 	 */
 	
 	/* ссылка на объект, где хранятся ВСЕ остальные узлы текущей сем. сети */
-	private transient Map<Long, ? extends Node> storage;
+	private Map<Long, ? extends Node> storage;
 	
 	/* Набор связей узла */
 	private Map<Long, TypeLink> links;
@@ -124,8 +124,10 @@ public class DefaultNode implements Node {
 			return Collections.emptyList();
 		}
 		/* берем все ссылки -> фильтруем по типу -> конвертируем полученное в список  */
-		return links.keySet().stream().filter(id -> links.get(id).equals(type))
-				.map(id -> storage.get(id)).collect(Collectors.toList());
+		return links.keySet().stream()
+				.filter(id -> links.get(id).equals(type))
+				.map(id -> storage.get(id))
+				.collect(Collectors.toList());
 	}
 	
 	@Override

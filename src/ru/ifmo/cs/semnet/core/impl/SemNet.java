@@ -22,7 +22,7 @@ import ru.ifmo.cs.semnet.core.Finder;
 import ru.ifmo.cs.semnet.core.LinkResolver;
 import ru.ifmo.cs.semnet.core.Selector;
 import ru.ifmo.cs.semnet.core.SemanticNetwork;
-import ru.ifmo.cs.semnet.core.exception.FailInitSemanticNetworkException;
+import ru.ifmo.cs.semnet.core.exception.SemanticNetworkException;
 
 /**
  * Реализация семантической сети на узлах по умолчанию.
@@ -51,7 +51,7 @@ public class SemNet implements SemanticNetwork<DefaultNode> {
 			restore(file);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			throw new FailInitSemanticNetworkException(ex);
+			throw new SemanticNetworkException(ex);
 		}
 	}
 	

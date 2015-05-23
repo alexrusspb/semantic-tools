@@ -49,5 +49,5 @@ public enum TypeLink {
 	 * но дружественной (или параллельной) сылкой будет ссылка 
 	 * на ЯВЛЕНИЕ.
 	 */
-	FRENDLY_LINK;
+	FRIENDLY_LINK;
 }

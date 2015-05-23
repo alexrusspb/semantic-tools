@@ -1,5 +1,7 @@
 package ru.ifmo.cs.semnet.examples;
 
+import java.io.IOException;
+
 import ru.ifmo.cs.semnet.core.impl.DefaultNode;
 import ru.ifmo.cs.semnet.core.impl.SemNet;
 import ru.ifmo.cs.semnet.core.impl.SemNetUtils;
@@ -10,15 +12,14 @@ import ru.ifmo.cs.semnet.importer.impl.TextStreamImportDriver;
 
 public class CreateAndUsingSemNetExample {
 
-	public static void main(String[] args) {
-		
-		// написать обертку для все этих телодвижений
+	public static void main(String[] args) throws IOException {
 		
 		SemNet semanticNetwork = new SemNet("Сущность", SemNetUtils.RUSSIA);
 		
 		ImportDriver<ImportPackageImpl> driver = new TextStreamImportDriver<>(System.in, SemNetUtils.RUSSIA);
 		
-		ru.ifmo.cs.semnet.importer.ImportManager<ImportPackageImpl, DefaultNode> manager = new ImportManagerImpl<>(semanticNetwork);
+		ru.ifmo.cs.semnet.importer.ImportManager<ImportPackageImpl, DefaultNode> manager = 
+				new ImportManagerImpl<>(semanticNetwork);
 		manager.registerDriver(driver);
 		manager.runInBackgroundMode();
 
@@ -31,9 +32,9 @@ public class CreateAndUsingSemNetExample {
 			// пока юзер не нажмет EXIT
 		}
 		
-		
-		
 		System.out.println("Размер сети: " + semanticNetwork.sizeNetwork());
 		System.out.println("Корневой узел имеет формат: \n" + semanticNetwork.getRootNode().toVerboseString());
+		
+		manager.close();
 	}
 }
